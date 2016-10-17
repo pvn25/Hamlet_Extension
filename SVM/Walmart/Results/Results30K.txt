@@ -1,0 +1,636 @@
+[1] "For JoinOpt Linear:"
+[1] "---------------------------------"
+[1] "dept"       "store"      "purchaseid"
+[1] "Running FFS  on 7 classes"
+[1] "remaining features to add"
+[1] "dept"       "store"      "purchaseid"
+[1] "FFS found number of parents:"
+[1] 3
+[1] "newfeatvecs"
+     [,1]        
+[1,] "dept"      
+[2,] "store"     
+[3,] "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"
+[1] "computed accuracy of parent set:"
+[1] -1.72912
+[1] "store"
+[1] "computed accuracy of parent set:"
+[1] -1.681512
+[1] "purchaseid"
+[1] "FFS at level:"
+[1] 1
+[1] "accuracy of parents:"
+[1] -1.083582 -1.729120 -1.681512
+[1] "found a more accurate parent:"
+[1] -1.083582
+[1] "dept"
+[1] "remaining features to add"
+[1] "store"      "purchaseid"
+[1] "FFS found number of parents:"
+[1] 2
+[1] "newfeatvecs"
+     [,1]   [,2]        
+[1,] "dept" "store"     
+[2,] "dept" "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -0.8499792
+[1] "dept"  "store"
+[1] "computed accuracy of parent set:"
+[1] -1.079828
+[1] "dept"       "purchaseid"
+[1] "FFS at level:"
+[1] 2
+[1] "accuracy of parents:"
+[1] -0.8499792 -1.0798277
+[1] "found a more accurate parent:"
+[1] -0.8499792
+[1] "dept"  "store"
+[1] "remaining features to add"
+[1] "purchaseid"
+[1] "FFS found number of parents:"
+[1] 1
+[1] "newfeatvecs"
+     [,1]   [,2]    [,3]        
+[1,] "dept" "store" "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -0.8412157
+[1] "dept"       "store"      "purchaseid"
+[1] "FFS at level:"
+[1] 3
+[1] "accuracy of parents:"
+[1] -0.8412157
+[1] "found a more accurate parent:"
+[1] -0.8412157
+[1] "dept"       "store"      "purchaseid"
+[1] "all features added; no more parents; FFS stopped"
+[1] "best accuracy and feature set overall:"
+[1] -0.8412157
+[1] "dept"       "store"      "purchaseid"
+    user   system  elapsed 
+3646.880    4.240 3651.218 
+[1] "Finished FFS  on 7 classes"
+[1] "Hold out validation "
+[1] "dept"       "store"      "purchaseid"
+[1] "Training Error of outset of FFS "
+[1] -0.6052272
+[1] "Test Error of outset of FFS "
+[1] -0.8170697
+[1] "Holdout validation of outset of FFS "
+[1] -0.8107863
+[1] "Running BFS  on 7 classes"
+[1] "full feature set accuracy:"
+[1] -0.8412157
+[1] "BFS found number of children:"
+[1] 3
+[1] "computed accuracy of child set:"
+[1] -1.727446
+[1] "store"      "purchaseid"
+[1] "computed accuracy of child set:"
+[1] -1.079828
+[1] "dept"       "purchaseid"
+[1] "computed accuracy of child set:"
+[1] -0.8499792
+[1] "dept"  "store"
+[1] "completed all children at level:"
+[1] 1
+[1] "accuracy of all children:"
+[1] -1.7274458 -1.0798277 -0.8499792
+[1] "no child is more accurate; BFS stopped"
+[1] "best accuracy and feature set overall:"
+[1] -0.8412157
+[1] "dept"       "store"      "purchaseid"
+    user   system  elapsed 
+2652.400    1.160 2653.593 
+[1] "Finished BFS  on 7 classes"
+[1] "Hold out validation "
+[1] "Training Error of outset of BFS "
+[1] -0.6052272
+[1] "Test Error of outset of BFS "
+[1] -0.8170697
+[1] "Holdout validation of outset of BFS "
+[1] -0.8107863
+[1] "Ranking features by Mutual Information on WTtrain"
+                     dept     store purchaseid
+attr_importance 0.8607797 0.1461433  0.4258116
+[1] "Entropy of features on WTtrain"
+      dept      store purchaseid 
+  6.193672   5.475144  11.084288 
+[1] "Information Gain Ratio of features on WTtrain"
+      dept      store purchaseid 
+0.13897727 0.02669214 0.03841578 
+[1] "features sorted by MI"
+[1] "store"      "purchaseid" "dept"      
+[1] "features sorted by IGR"
+[1] "store"      "purchaseid" "dept"      
+[1] " features sorted by MI"
+[1] "store"      "purchaseid" "dept"      
+[1] " features sorted by IGR"
+[1] "store"      "purchaseid" "dept"      
+[1] "Running Filter-MI  on 7 classes"
+[1] "number of nested subsets to evaluate:"
+[1] 3
+[1] "runtime taken for this set"
+   user  system elapsed 
+433.570   0.430 434.006 
+[1] "computed accuracy of nested subset:"
+[1] -0.8179112
+[1] "store"      "purchaseid" "dept"      
+[1] "runtime taken for this set"
+   user  system elapsed 
+404.670   0.540 405.217 
+[1] "computed accuracy of nested subset:"
+[1] -0.9006665
+[1] "purchaseid" "dept"      
+[1] "runtime taken for this set"
+   user  system elapsed 
+162.450   0.000 162.453 
+[1] "computed accuracy of nested subset:"
+[1] -1.083582
+[1] "dept"
+[1] "best accuracy and feature set overall:"
+[1] -0.8179112
+[1] "store"      "purchaseid" "dept"      
+    user   system  elapsed 
+1000.690    0.970 1001.679 
+[1] "Finished Filter-MI  on 7 classes"
+[1] "Hold out validation"
+[1] "Training Error of outset of Filter-MI "
+[1] -0.6085502
+[1] "Test Error of outset of Filter-MI "
+[1] -0.8179112
+[1] "Holdout validation of outset of Filter-MI "
+[1] -0.8120433
+[1] "Running Filter-IGR  on 7 classes"
+[1] "number of nested subsets to evaluate:"
+[1] 3
+[1] "runtime taken for this set"
+   user  system elapsed 
+435.580   1.010 436.593 
+[1] "computed accuracy of nested subset:"
+[1] -0.8179112
+[1] "store"      "purchaseid" "dept"      
+[1] "runtime taken for this set"
+   user  system elapsed 
+405.210   0.660 405.875 
+[1] "computed accuracy of nested subset:"
+[1] -0.9006665
+[1] "purchaseid" "dept"      
+[1] "runtime taken for this set"
+   user  system elapsed 
+164.030   0.000 164.031 
+[1] "computed accuracy of nested subset:"
+[1] -1.083582
+[1] "dept"
+[1] "best accuracy and feature set overall:"
+[1] -0.8179112
+[1] "store"      "purchaseid" "dept"      
+    user   system  elapsed 
+1004.820    1.670 1006.502 
+[1] "Finished Filter-IGR  on 7 classes"
+[1] "Hold out validation"
+[1] "Training Error of outset of Filter-IGR "
+[1] -0.6085502
+[1] "Test Error of outset of Filter-IGR "
+[1] "Holdout validation of outset of Filter-IGR "
+[1] -0.8120433
+[1] "For JoinAll Linear:"
+[1] "---------------------------------"
+ [1] "dept"               "store"              "purchaseid"         "type"               "size"               "temperature_avg"    "temperature_stdev"  "fuel_price_avg"    
+ [9] "fuel_price_stdev"   "cpi_avg"            "cpi_stdev"          "unemployment_avg"   "unemployment_stdev" "holidayfreq"       
+[1] "Running FFS  on 7 classes"
+[1] "remaining features to add"
+ [1] "dept"               "store"              "purchaseid"         "type"               "size"               "temperature_avg"    "temperature_stdev"  "fuel_price_avg"    
+ [9] "fuel_price_stdev"   "cpi_avg"            "cpi_stdev"          "unemployment_avg"   "unemployment_stdev" "holidayfreq"       
+[1] "FFS found number of parents:"
+[1] 14
+[1] "newfeatvecs"
+      [,1]                
+ [1,] "dept"              
+ [2,] "store"             
+ [3,] "purchaseid"        
+ [4,] "type"              
+ [5,] "size"              
+ [6,] "temperature_avg"   
+ [7,] "temperature_stdev" 
+ [8,] "fuel_price_avg"    
+ [9,] "fuel_price_stdev"  
+[10,] "cpi_avg"           
+[11,] "cpi_stdev"         
+[12,] "unemployment_avg"  
+[13,] "unemployment_stdev"
+[14,] "holidayfreq"       
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"
+[1] "computed accuracy of parent set:"
+[1] -1.72912
+[1] "store"
+[1] "computed accuracy of parent set:"
+[1] -1.681512
+[1] "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -1.956504
+[1] "type"
+[1] "computed accuracy of parent set:"
+[1] -1.842939
+[1] "size"
+[1] "computed accuracy of parent set:"
+[1] -1.87056
+[1] "temperature_avg"
+[1] "computed accuracy of parent set:"
+[1] -1.705867
+[1] "temperature_stdev"
+[1] "computed accuracy of parent set:"
+[1] -1.711132
+[1] "fuel_price_avg"
+[1] "computed accuracy of parent set:"
+[1] -1.737993
+[1] "fuel_price_stdev"
+[1] "computed accuracy of parent set:"
+[1] -1.697258
+[1] "cpi_avg"
+[1] "computed accuracy of parent set:"
+[1] -1.710012
+[1] "cpi_stdev"
+[1] "computed accuracy of parent set:"
+[1] -1.796623
+[1] "unemployment_avg"
+[1] "computed accuracy of parent set:"
+[1] -1.963652
+[1] "unemployment_stdev"
+[1] "computed accuracy of parent set:"
+[1] -1.729866
+[1] "holidayfreq"
+[1] "FFS at level:"
+[1] 1
+[1] "accuracy of parents:"
+ [1] -1.083582 -1.729120 -1.681512 -1.956504 -1.842939 -1.870560 -1.705867 -1.711132 -1.737993 -1.697258 -1.710012 -1.796623 -1.963652 -1.729866
+[1] "found a more accurate parent:"
+[1] -1.083582
+[1] "dept"
+[1] "remaining features to add"
+ [1] "store"              "purchaseid"         "type"               "size"               "temperature_avg"    "temperature_stdev"  "fuel_price_avg"     "fuel_price_stdev"  
+ [9] "cpi_avg"            "cpi_stdev"          "unemployment_avg"   "unemployment_stdev" "holidayfreq"       
+[1] "FFS found number of parents:"
+[1] 13
+[1] "newfeatvecs"
+      [,1]   [,2]                
+ [1,] "dept" "store"             
+ [2,] "dept" "purchaseid"        
+ [3,] "dept" "type"              
+ [4,] "dept" "size"              
+ [5,] "dept" "temperature_avg"   
+ [6,] "dept" "temperature_stdev" 
+ [7,] "dept" "fuel_price_avg"    
+ [8,] "dept" "fuel_price_stdev"  
+ [9,] "dept" "cpi_avg"           
+[10,] "dept" "cpi_stdev"         
+[11,] "dept" "unemployment_avg"  
+[12,] "dept" "unemployment_stdev"
+[13,] "dept" "holidayfreq"       
+[1] "computed accuracy of parent set:"
+[1] -0.8499792
+[1] "dept"  "store"
+[1] "computed accuracy of parent set:"
+[1] -1.079828
+[1] "dept"       "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -0.9520539
+[1] "dept" "type"
+[1] "computed accuracy of parent set:"
+[1] -0.9356324
+[1] "dept" "size"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"            "temperature_avg"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"              "temperature_stdev"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"           "fuel_price_avg"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"             "fuel_price_stdev"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"    "cpi_avg"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"      "cpi_stdev"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"             "unemployment_avg"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"               "unemployment_stdev"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"        "holidayfreq"
+[1] "FFS at level:"
+[1] 2
+[1] "accuracy of parents:"
+ [1] -0.8499792 -1.0798277 -0.9520539 -0.9356324 -1.0835819 -1.0835819 -1.0835819 -1.0835819 -1.0835819 -1.0835819 -1.0835819 -1.0835819 -1.0835819
+[1] "found a more accurate parent:"
+[1] -0.8499792
+[1] "dept"  "store"
+[1] "remaining features to add"
+ [1] "purchaseid"         "type"               "size"               "temperature_avg"    "temperature_stdev"  "fuel_price_avg"     "fuel_price_stdev"   "cpi_avg"           
+ [9] "cpi_stdev"          "unemployment_avg"   "unemployment_stdev" "holidayfreq"       
+[1] "FFS found number of parents:"
+[1] 12
+[1] "newfeatvecs"
+      [,1]   [,2]    [,3]                
+ [1,] "dept" "store" "purchaseid"        
+ [2,] "dept" "store" "type"              
+ [3,] "dept" "store" "size"              
+ [4,] "dept" "store" "temperature_avg"   
+ [5,] "dept" "store" "temperature_stdev" 
+ [6,] "dept" "store" "fuel_price_avg"    
+ [7,] "dept" "store" "fuel_price_stdev"  
+ [8,] "dept" "store" "cpi_avg"           
+ [9,] "dept" "store" "cpi_stdev"         
+[10,] "dept" "store" "unemployment_avg"  
+[11,] "dept" "store" "unemployment_stdev"
+[12,] "dept" "store" "holidayfreq"       
+[1] "computed accuracy of parent set:"
+[1] -0.8412157
+[1] "dept"       "store"      "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -0.8393017
+[1] "dept"  "store" "type" 
+[1] "computed accuracy of parent set:"
+[1] -0.8502415
+[1] "dept"  "store" "size" 
+[1] "computed accuracy of parent set:"
+[1] -0.8500964
+[1] "dept"            "store"           "temperature_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8502917
+[1] "dept"              "store"             "temperature_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8503308
+[1] "dept"           "store"          "fuel_price_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.849929
+[1] "dept"             "store"            "fuel_price_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8445253
+[1] "dept"    "store"   "cpi_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8463547
+[1] "dept"      "store"     "cpi_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8480794
+[1] "dept"             "store"            "unemployment_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8485548
+[1] "dept"               "store"              "unemployment_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8489293
+[1] "dept"        "store"       "holidayfreq"
+[1] "FFS at level:"
+[1] 3
+[1] "accuracy of parents:"
+ [1] -0.8412157 -0.8393017 -0.8502415 -0.8500964 -0.8502917 -0.8503308 -0.8499290 -0.8445253 -0.8463547 -0.8480794 -0.8485548 -0.8489293
+[1] "found a more accurate parent:"
+[1] -0.8393017
+[1] "dept"  "store" "type" 
+[1] "remaining features to add"
+ [1] "purchaseid"         "size"               "temperature_avg"    "temperature_stdev"  "fuel_price_avg"     "fuel_price_stdev"   "cpi_avg"            "cpi_stdev"         
+ [9] "unemployment_avg"   "unemployment_stdev" "holidayfreq"       
+[1] "FFS found number of parents:"
+[1] 11
+[1] "newfeatvecs"
+      [,1]   [,2]    [,3]   [,4]                
+ [1,] "dept" "store" "type" "purchaseid"        
+ [2,] "dept" "store" "type" "size"              
+ [3,] "dept" "store" "type" "temperature_avg"   
+ [4,] "dept" "store" "type" "temperature_stdev" 
+ [5,] "dept" "store" "type" "fuel_price_avg"    
+ [6,] "dept" "store" "type" "fuel_price_stdev"  
+ [7,] "dept" "store" "type" "cpi_avg"           
+ [8,] "dept" "store" "type" "cpi_stdev"         
+ [9,] "dept" "store" "type" "unemployment_avg"  
+[10,] "dept" "store" "type" "unemployment_stdev"
+[11,] "dept" "store" "type" "holidayfreq"       
+[1] "computed accuracy of parent set:"
+[1] -0.826916
+[1] "dept"       "store"      "type"       "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -0.8182417
+[1] "dept"  "store" "type"  "size" 
+[1] "computed accuracy of parent set:"
+[1] -0.8384647
+[1] "dept"            "store"           "type"            "temperature_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8415089
+[1] "dept"              "store"             "type"              "temperature_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8385269
+[1] "dept"           "store"          "type"           "fuel_price_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8422302
+[1] "dept"             "store"            "type"             "fuel_price_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8361302
+[1] "dept"    "store"   "type"    "cpi_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8357046
+[1] "dept"      "store"     "type"      "cpi_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8363628
+[1] "dept"             "store"            "type"             "unemployment_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8371453
+[1] "dept"               "store"              "type"               "unemployment_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8432998
+[1] "dept"        "store"       "type"        "holidayfreq"
+[1] "FFS at level:"
+[1] 4
+[1] "accuracy of parents:"
+ [1] -0.8269160 -0.8182417 -0.8384647 -0.8415089 -0.8385269 -0.8422302 -0.8361302 -0.8357046 -0.8363628 -0.8371453 -0.8432998
+[1] "found a more accurate parent:"
+[1] -0.8182417
+[1] "dept"  "store" "type"  "size" 
+[1] "remaining features to add"
+ [1] "purchaseid"         "temperature_avg"    "temperature_stdev"  "fuel_price_avg"     "fuel_price_stdev"   "cpi_avg"            "cpi_stdev"          "unemployment_avg"  
+ [9] "unemployment_stdev" "holidayfreq"       
+[1] "FFS found number of parents:"
+[1] 10
+[1] "newfeatvecs"
+      [,1]   [,2]    [,3]   [,4]   [,5]                
+ [1,] "dept" "store" "type" "size" "purchaseid"        
+ [2,] "dept" "store" "type" "size" "temperature_avg"   
+ [3,] "dept" "store" "type" "size" "temperature_stdev" 
+ [4,] "dept" "store" "type" "size" "fuel_price_avg"    
+ [5,] "dept" "store" "type" "size" "fuel_price_stdev"  
+ [6,] "dept" "store" "type" "size" "cpi_avg"           
+ [7,] "dept" "store" "type" "size" "cpi_stdev"         
+ [8,] "dept" "store" "type" "size" "unemployment_avg"  
+ [9,] "dept" "store" "type" "size" "unemployment_stdev"
+[10,] "dept" "store" "type" "size" "holidayfreq"       
+[1] "computed accuracy of parent set:"
+[1] -0.7879185
+[1] "dept"       "store"      "type"       "size"       "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -0.8164946
+[1] "dept"            "store"           "type"            "size"            "temperature_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8166573
+[1] "dept"              "store"             "type"              "size"              "temperature_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8147846
+[1] "dept"           "store"          "type"           "size"           "fuel_price_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.817447
+[1] "dept"             "store"            "type"             "size"             "fuel_price_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8066917
+[1] "dept"    "store"   "type"    "size"    "cpi_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.8076321
+[1] "dept"      "store"     "type"      "size"      "cpi_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.815227
+[1] "dept"             "store"            "type"             "size"             "unemployment_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.812569
+[1] "dept"               "store"              "type"               "size"               "unemployment_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.8190067
+[1] "dept"        "store"       "type"        "size"        "holidayfreq"
+[1] "FFS at level:"
+[1] 5
+[1] "accuracy of parents:"
+ [1] -0.7879185 -0.8164946 -0.8166573 -0.8147846 -0.8174470 -0.8066917 -0.8076321 -0.8152270 -0.8125690 -0.8190067
+[1] "found a more accurate parent:"
+[1] -0.7879185
+[1] "dept"       "store"      "type"       "size"       "purchaseid"
+[1] "remaining features to add"
+[1] "temperature_avg"    "temperature_stdev"  "fuel_price_avg"     "fuel_price_stdev"   "cpi_avg"            "cpi_stdev"          "unemployment_avg"   "unemployment_stdev"
+[9] "holidayfreq"       
+[1] "FFS found number of parents:"
+[1] 9
+[1] "newfeatvecs"
+      [,1]   [,2]    [,3]   [,4]   [,5]         [,6]                
+ [1,] "dept" "store" "type" "size" "purchaseid" "temperature_avg"   
+ [2,] "dept" "store" "type" "size" "purchaseid" "temperature_stdev" 
+ [3,] "dept" "store" "type" "size" "purchaseid" "fuel_price_avg"    
+ [4,] "dept" "store" "type" "size" "purchaseid" "fuel_price_stdev"  
+ [5,] "dept" "store" "type" "size" "purchaseid" "cpi_avg"           
+ [6,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev"         
+ [7,] "dept" "store" "type" "size" "purchaseid" "unemployment_avg"  
+ [8,] "dept" "store" "type" "size" "purchaseid" "unemployment_stdev"
+ [9,] "dept" "store" "type" "size" "purchaseid" "holidayfreq"       
+[1] "computed accuracy of parent set:"
+[1] -0.7873162
+[1] "dept"            "store"           "type"            "size"            "purchaseid"      "temperature_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.7860799
+[1] "dept"              "store"             "type"              "size"              "purchaseid"        "temperature_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.7864058
+[1] "dept"           "store"          "type"           "size"           "purchaseid"     "fuel_price_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.7862187
+[1] "dept"             "store"            "type"             "size"             "purchaseid"       "fuel_price_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.7837711
+[1] "dept"       "store"      "type"       "size"       "purchaseid" "cpi_avg"   
+[1] "computed accuracy of parent set:"
+[1] -0.7815222
+[1] "dept"       "store"      "type"       "size"       "purchaseid" "cpi_stdev" 
+[1] "computed accuracy of parent set:"
+[1] -0.784364
+[1] "dept"             "store"            "type"             "size"             "purchaseid"       "unemployment_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.782899
+[1] "dept"               "store"              "type"               "size"               "purchaseid"         "unemployment_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.7857057
+[1] "dept"        "store"       "type"        "size"        "purchaseid"  "holidayfreq"
+[1] "FFS at level:"
+[1] 6
+[1] "accuracy of parents:"
+[1] -0.7873162 -0.7860799 -0.7864058 -0.7862187 -0.7837711 -0.7815222 -0.7843640 -0.7828990 -0.7857057
+[1] "found a more accurate parent:"
+[1] -0.7815222
+[1] "dept"       "store"      "type"       "size"       "purchaseid" "cpi_stdev" 
+[1] "remaining features to add"
+[1] "temperature_avg"    "temperature_stdev"  "fuel_price_avg"     "fuel_price_stdev"   "cpi_avg"            "unemployment_avg"   "unemployment_stdev" "holidayfreq"       
+[1] "FFS found number of parents:"
+[1] 8
+[1] "newfeatvecs"
+     [,1]   [,2]    [,3]   [,4]   [,5]         [,6]        [,7]                
+[1,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "temperature_avg"   
+[2,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "temperature_stdev" 
+[3,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "fuel_price_avg"    
+[4,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "fuel_price_stdev"  
+[5,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "cpi_avg"           
+[6,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_avg"  
+[7,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_stdev"
+[8,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "holidayfreq"       
+[1] "computed accuracy of parent set:"
+[1] -0.7792546
+[1] "dept"            "store"           "type"            "size"            "purchaseid"      "cpi_stdev"       "temperature_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.7820865
+[1] "dept"              "store"             "type"              "size"              "purchaseid"        "cpi_stdev"         "temperature_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.7793946
+[1] "dept"           "store"          "type"           "size"           "purchaseid"     "cpi_stdev"      "fuel_price_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.7812672
+[1] "dept"             "store"            "type"             "size"             "purchaseid"       "cpi_stdev"        "fuel_price_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.7785115
+[1] "dept"       "store"      "type"       "size"       "purchaseid" "cpi_stdev"  "cpi_avg"   
+[1] "computed accuracy of parent set:"
+[1] -0.778286
+[1] "dept"             "store"            "type"             "size"             "purchaseid"       "cpi_stdev"        "unemployment_avg"
+[1] "computed accuracy of parent set:"
+[1] -0.7755625
+[1] "dept"               "store"              "type"               "size"               "purchaseid"         "cpi_stdev"          "unemployment_stdev"
+[1] "computed accuracy of parent set:"
+[1] -0.7805868
+[1] "dept"        "store"       "type"        "size"        "purchaseid"  "cpi_stdev"   "holidayfreq"
+[1] "FFS at level:"
+[1] 7
+[1] "accuracy of parents:"
+[1] -0.7792546 -0.7820865 -0.7793946 -0.7812672 -0.7785115 -0.7782860 -0.7755625 -0.7805868
+[1] "found a more accurate parent:"
+[1] -0.7755625
+[1] "dept"               "store"              "type"               "size"               "purchaseid"         "cpi_stdev"          "unemployment_stdev"
+[1] "remaining features to add"
+[1] "temperature_avg"   "temperature_stdev" "fuel_price_avg"    "fuel_price_stdev"  "cpi_avg"           "unemployment_avg"  "holidayfreq"      
+[1] "FFS found number of parents:"
+[1] 7
+[1] "newfeatvecs"
+     [,1]   [,2]    [,3]   [,4]   [,5]         [,6]        [,7]                 [,8]               
+[1,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_stdev" "temperature_avg"  
+[2,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_stdev" "temperature_stdev"
+[3,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_stdev" "fuel_price_avg"   
+[4,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_stdev" "fuel_price_stdev" 
+[5,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_stdev" "cpi_avg"          
+[6,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_stdev" "unemployment_avg" 
+[7,] "dept" "store" "type" "size" "purchaseid" "cpi_stdev" "unemployment_stdev" "holidayfreq"      
+[1] "computed accuracy of parent set:"
+[1] -0.7765223
+[1] "dept"               "store"              "type"               "size"               "purchaseid"         "cpi_stdev"          "unemployment_stdev" "temperature_avg"   
+[1] "computed accuracy of parent set:"
+[1] -0.7774993
+[1] "dept"               "store"              "type"               "size"               "purchaseid"         "cpi_stdev"          "unemployment_stdev" "temperature_stdev" 
+[1] "computed accuracy of parent set:"
+[1] -0.7747608
+[1] "dept"               "store"              "type"               "size"               "purchaseid"         "cpi_stdev"          "unemployment_stdev" "fuel_price_avg"    
+[1] "computed accuracy of parent set:"
+[1] -0.7762963
+[1] "dept"               "store"              "type"               "size"               "purchaseid"         "cpi_stdev"          "unemployment_stdev" "fuel_price_stdev"  
+[1] "computed accuracy of parent set:"
+[1] -0.7731793
+[1] "dept"               "store"              "type"               "size"               "purchaseid"         "cpi_stdev"          "unemployment_stdev" "cpi_avg"           

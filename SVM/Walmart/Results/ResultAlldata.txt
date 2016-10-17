@@ -1,0 +1,16 @@
+[1] "For JoinOpt Linear:"
+[1] "---------------------------------"
+[1] "dept"       "store"      "purchaseid"
+[1] "Running FFS  on 7 classes"
+[1] "remaining features to add"
+[1] "dept"       "store"      "purchaseid"
+[1] "FFS found number of parents:"
+[1] 3
+[1] "newfeatvecs"
+     [,1]        
+[1,] "dept"      
+[2,] "store"     
+[3,] "purchaseid"
+[1] "computed accuracy of parent set:"
+[1] -1.083582
+[1] "dept"
