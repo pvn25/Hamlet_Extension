@@ -1,0 +1,174 @@
+\documentclass[sigconf]{acmart}
+
+\usepackage{booktabs} % For formal tables
+\usepackage{amsmath}
+\usepackage{graphicx,xspace,verbatim,comment}
+\usepackage{hyperref,array,color,balance,multirow}
+\usepackage{balance,float,url,amsfonts,alltt}
+\usepackage{mathtools,rotating,amsmath,amssymb}
+\usepackage{color,ifpdf,fancyvrb,array}
+% \usepackage{algorithm,algpseudocode}
+\usepackage{etoolbox,listings,subcaption}
+\usepackage{bigstrut,morefloats}
+%\usepackage[linesnumbered,boxruled]{algorithm2e}
+\usepackage[boxruled]{algorithm2e}
+\usepackage{pbox}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\newcommand{\eat}[1]{}
+
+\newenvironment{packeditems}{
+\begin{itemize}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+\newenvironment{packedenums}{
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+
+\setcopyright{acmcopyright}
+% \setcopyright{rightsretained}
+
+\acmDOI{10.475/123_4}
+\acmISBN{123-4567-24-567/08/06}
+\acmConference[WOODSTOCK'97]{ACM Woodstock conference}{July 1997}{El Paso, Texas USA} 
+\acmYear{1997}
+\copyrightyear{2016}
+\acmPrice{15.00}
+
+\begin{document}
+
+\title{Discarding Data Tables Without Even Looking At Them}
+
+\author{Vraj Shah}
+\affiliation{\institution{University of California, San Diego}}
+\email{vps002@eng.ucsd.edu}
+\author{Arun Kumar}
+\affiliation{\institution{University of California, San Diego}}
+\email{arunkk@eng.ucsd.edu}
+\author{Xiaojin Zhu}
+\affiliation{\institution{University of Wisconsin-Madison}}
+\email{jerryzhu@cs.wisc.edu}
+
+\begin{abstract}
+
+\end{abstract}
+
+% \keywords{ACM proceedings, \LaTeX, text tagging}
+
+\maketitle
+
+\section{Introduction}
+
+
+
+\section{Preliminaries}
+We now explain our problem setting and notation, followed by an example. We then explain our assumptions and scope.
+
+\subsection{Problem Setting and Notation}
+The setting we focus on is the following: the dataset has a set of tables in the so-called \textit{star schema}. 
+This database schemas is ubiquitous in diverse applications ranging from insurance to recommendation systems~\cite{cowbook}.
+The ``fact'' table is denoted \textbf{S} and it has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_k)$,
+while a ``dimension'' table is denoted $\textbf{R}_i$ ($i = 1$ to $k$) and it has the schema $\textbf{R}_i(\underline{RID_i},\textbf{X}_{R_i})$.
+In the schema, $Y$ is the learning target (class label), $\textbf{X}_S$ and $\textbf{X}_{R_i}$ are vectors (sequences) of features, $RID_i$ is the primary key
+of $\textbf{R}_i$, while $FK_i$ is a foreign key feature that refers to $\textbf{R}_i$. 
+For ease of exposition, we also treat \textbf{X} as a \textit{set} of features since the order among features is immaterial in our setting.
+Let \textbf{T} denote the output of the projected equi-join query that constructs the full training dataset by \textit{concatenating} the features from all base tables: 
+$\textbf{T} \leftarrow \pi(\textbf{R} \bowtie_{RID=FK} \textbf{S})$. In general, its schema is 
+$\textbf{T}(\underline{SID},Y,\textbf{X}_S,FK_1,\dots,FK_k,\textbf{X}_{R_1},\dots,\textbf{X}_{R_k})$.
+
+\paragraph*{Example}
+Consider a common classification task for which ML classifiers are used, predicting \textit{customer churn}.
+The fact table is \texttt{Customers} (\underline{\texttt{CustomerID}}, \texttt{Churn}, \texttt{Gender}, \texttt{Age}, \texttt{Employer}, \texttt{ZipCode}).
+\texttt{Employer} and \texttt{Zipcode} are foreign key features that refer respectively to a customer's employer (e.g., Google or Microsoft) and the area 
+where a customer lives. The respective dimension tables are \texttt{Employers} (\underline{\texttt{Employer}}, \texttt{State}, \texttt{Revenue}) 
+and \texttt{Areas} (\underline{ZipCode}, \texttt{CrimeRate}, \texttt{AccidentRate}).
+In such scenarios, data scientists typically join all base tables to bring in the extra features from the dimension tables. In this case, they might do so 
+because of a hunch that customers employed by rich corporations in coastal states and living in ``safe'' areas are unlikely to churn.
+
+\subsection{Assumptions and Scope}
+For the sake of tractability, in this paper, we assume that all features are \textit{nominal} (categorical).\footnote{Numeric features can be discretized 
+using standard techniques, e.g., binning~\cite{mitchell}.} We also focus on binary classification but our ideas can be easily applied to multi-class targets as well.
+We assume that the foreign key features ($FK_i$) are not keys in the fact table, e.g., \texttt{ZipCode} does not uniquely identify a customer.
+Finally, we also do not study the ``cold start'' issue because it is orthogonal to the focus of this paper. 
+In other words, we assume that individual feature values not seen during training do not arise during testing. 
+In our example, this means that the classifier does not handle customers with previously unseen \texttt{Employer}, \texttt{ZipCode}, or even \texttt{Gender}. 
+We clarify that our goal is \textit{not} to create new classification or feature selection algorithms, nor is to study which algorithms yield lowest errors
+Our goal is to study the implications of key-foreign key dependencies (KFKDs) and functional dependencies (FDs) among features on the behavior of complex non-linear classifiers.
+For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as the representative non-linear classifiers.
+
+
+
+
+\section{KFK Joins and Non-linear Classifiers}
+
+\subsection{Empirical Study with Real Data}
+
+\paragraph*{Datasets}
+
+\paragraph*{Decision Tree}
+
+\paragraph*{Gaussian SVM}
+
+
+\subsection{Drill-down Simulation Study}
+
+\subsection{Explanation and Open Questions}
+
+\subsection{Making Foreign Key Features Practical}
+
+Clearly, foreign keys often act as good representatives of foreign features for \textit{accuracy}.
+But they often pose a practical bottleneck for \textit{interpretability} due to the sheer size of their domains.
+For example, it is nearly impossible to visualize a decision tree that uses a foreign key feature with 1000s of domain values.
+Thus, to make foreign key features more practical, we propose a simple solution: \textit{compress} their domains to a (much) smaller 
+user-defined domain size. This is inspired by the hashing trick~\cite{hashingtrick} but instead of an unsupervised random 
+compression, we propose a deterministic supervised compression that optimizes some criterion related to accuracy. A key benefit of 
+this approach is potentially higher accuracy, while obtaining an interpretable grouping of domain values.
+We consider a natural criterion for maximization: \textit{mutual information} of the compressed foreign key with the target.
+
+Formally, given the target $Y$ with domain $\mathcal{D}_Y$, a foreign key feature $FK$ with domain $\mathcal{D}_{FK}$ recoded as $[m]$ 
+(where $m = |\mathcal{D}_{FK}|$) and a positive integer ``budget'' $l \ll m$, obtain a mapping $f: [m] \rightarrow [l]$ such that $I(Y; f(FK))$ is maximized,
+or equivalently, $H(Y|f(FK))$ is minimized. Essentially, this is a partitioning problem in which we $\mathcal{D}_{FK}$ is partitioned into $l$ subsets. 
+We reformulate this as a $0/1$-optimization problem over an $m \times l$ indicator variable matrix $v$.
+The input constants are $|\mathcal{D}_Y| \cdot l$ frequency counts of the joint $(Y, FK)$ values in the training dataset, denoted $c_{y, x}$.
+The problem then becomes the following:
+
+\begin{equation*}
+\begin{aligned}
+& \underset{v}{\text{min}}
+& & \sum_{y \in \mathcal{D}_Y} \sum_{j=1}^l \bigg(\sum_{i=i}^m c_{y,i} \cdot v_{i,j} \bigg) log \bigg(\frac{\sum_{y' \in \mathcal{D}_Y} \sum_{i=i}^m c_{y,i} \cdot v_{i,j}}{\sum_{i=i}^m c_{y,i} \cdot v_{i,j}}\bigg) \\
+& \text{s.t.}
+& & \sum_{j=1}^l v_{i,j} = 1, \; i = 1, \ldots, m
+\end{aligned}
+\end{equation*}
+
+The above optimization problem is not convex and hard to optimize. Thus, apart from a random hashing-based compression baseline, we evaluate two new heuristics:
+\begin{packeditems}
+\item \textit{SortBased}: This is a greedy approach in which we sort $z \in \mathcal{D}_{FK}$ on $H(Y|FK=z)$, compute the differences among adjacent pairs of values, 
+and pick the boundaries corresponding to the top $l$ differences. This gives us an $l$-partition of $\mathcal{D}_{FK}$. The intuition is that by grouping $FK$ 
+values that have comparable conditional entropy values, $H(Y|f(FK))$ is unlikely to increase much compared to $H(Y|FK)$.
+
+\item \textit{TreeBased}: This is a post-hoc approach in which we first train a decision tree that includes $FK$. Internally, the tree induces a partitioning of 
+$\mathcal{D}_{FK}$. We simply construct $f$ using this partitioning information. Let $r$ be the number of subsets of $\mathcal{D}_{FK}$ at the lowest levels of the tree 
+(finest-grained partitioning). If $r = l$, each subset directly corresponds to a value in $[l]$. If $r > l$, we use the same greedy approach used for the SortBased 
+approach to merge the subsets until we end up with $l$ subsets. Finally, if $r < l$, we simply leave the partitioning as is because we already satisfy the user's budget;
+the co-domain of $f$ is then only $[r]$ instead of $[l]$.
+\end{packeditems}
+
+
+
+\section{Related Work}
+
+\section{Conclusion and Future Work}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{MLAvoidJoins} 
+
+\end{document}
