@@ -45,7 +45,7 @@
 
 \begin{document}
 
-\title{Discarding Data Tables Without Even Looking At Them}
+\title{Stop That Join! Discarding Dimension Tables \\when Learning Infinite VC-Dimension Classifiers}
 
 \author{Vraj Shah}
 \affiliation{\institution{University of California, San Diego}}
@@ -107,7 +107,7 @@ For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as 
 
 
 
-\section{KFK Joins and Non-linear Classifiers}
+\section{Discarding Dimension Tables}
 
 \subsection{Empirical Study with Real Data}
 
@@ -120,9 +120,25 @@ For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as 
 
 \subsection{Drill-down Simulation Study}
 
+\paragraph*{Setup and Data Synthesis}
+
+\paragraph*{Scenario OneXr}
+
+\paragraph*{Scenario XSXR}
+
+\paragraph*{Scenario SkewedFK}
+
+
 \subsection{Explanation and Open Questions}
 
+\paragraph*{Decision Tree}
+
+\paragraph*{Gaussian SVM}
+
+
 \subsection{Making Foreign Key Features Practical}
+
+\subsubsection{Foreign Key Domain Compression}
 
 Clearly, foreign keys often act as good representatives of foreign features for \textit{accuracy}.
 But they often pose a practical bottleneck for \textit{interpretability} due to the sheer size of their domains.
@@ -149,18 +165,23 @@ The problem then becomes the following:
 \end{aligned}
 \end{equation*}
 
-The above optimization problem is not convex and hard to optimize. Thus, apart from a random hashing-based compression baseline, we evaluate two new heuristics:
-\begin{packeditems}
-\item \textit{SortBased}: This is a greedy approach in which we sort $z \in \mathcal{D}_{FK}$ on $H(Y|FK=z)$, compute the differences among adjacent pairs of values, 
-and pick the boundaries corresponding to the top $l$ differences. This gives us an $l$-partition of $\mathcal{D}_{FK}$. The intuition is that by grouping $FK$ 
-values that have comparable conditional entropy values, $H(Y|f(FK))$ is unlikely to increase much compared to $H(Y|FK)$.
+The optimization problem is non-convex and hard to optimize in a brute-force  way due to the number of variables (potentially millions). Thus, we propose two heuristics: \textit{SortBased} and \textit{TreeBased}.
 
-\item \textit{TreeBased}: This is a post-hoc approach in which we first train a decision tree that includes $FK$. Internally, the tree induces a partitioning of 
+\textit{SortBased} is a greedy approach in which we sort $\mathcal{D}_{FK}$ based on $H(Y|FK=z), ~z \in \mathcal{D}_{FK}$, compute the differences among adjacent pairs of values, and pick the boundaries corresponding to the top $l$ differences (ties broken randomly). This gives us an $l$-partition of $\mathcal{D}_{FK}$. The intuition is that by grouping $FK$ values that have comparable conditional entropy values, $H(Y|f(FK))$ is unlikely to increase much compared to $H(Y|FK)$. This approach operates on the training split.
+
+\textit{TreeBased} is a post-hoc approach in which we first learn a decision tree that includes $FK$. Internally, the tree induces a partitioning of 
 $\mathcal{D}_{FK}$. We simply construct $f$ using this partitioning information. Let $r$ be the number of subsets of $\mathcal{D}_{FK}$ at the lowest levels of the tree 
 (finest-grained partitioning). If $r = l$, each subset directly corresponds to a value in $[l]$. If $r > l$, we use the same greedy approach used for the SortBased 
 approach to merge the subsets until we end up with $l$ subsets. Finally, if $r < l$, we simply leave the partitioning as is because we already satisfy the user's budget;
-the co-domain of $f$ is then only $[r]$ instead of $[l]$.
-\end{packeditems}
+the co-domain of $f$ is then only $[r]$ instead of $[l]$. This approach utilizes both the training and validation splits for learning the best decision tree that includes $FK$, with .
+
+We now empirically compare the accuracy of the above two heuristics against the hashing trick as a baseline with $l$ as the number of buckets.
+We use the real datasets for this experiment and our methodology is as follows.
+We retain the 50:25:25 train-validate-test split. \textit{SortBased}, hashing, and PCA use the training split to perform the domain compression. Since \textit{TreeBased} requires 
+learning a decision tree, we use the validation set as before to tune the hyper-parameters. Given the compressed domain, we 
+
+
+\subsubsection{Foreign Key Smoothing using Foreign Features}
 
 
 
@@ -169,6 +190,6 @@ the co-domain of $f$ is then only $[r]$ instead of $[l]$.
 \section{Conclusion and Future Work}
 
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{MLAvoidJoins} 
+\bibliography{MLAvoidJoins}
 
 \end{document}
