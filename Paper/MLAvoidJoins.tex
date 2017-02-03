@@ -78,11 +78,14 @@ This database schemas is ubiquitous in diverse applications ranging from insuran
 The ``fact'' table is denoted \textbf{S} and it has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_k)$,
 while a ``dimension'' table is denoted $\textbf{R}_i$ ($i = 1$ to $k$) and it has the schema $\textbf{R}_i(\underline{RID_i},\textbf{X}_{R_i})$.
 In the schema, $Y$ is the learning target (class label), $\textbf{X}_S$ and $\textbf{X}_{R_i}$ are vectors (sequences) of features, $RID_i$ is the primary key
-of $\textbf{R}_i$, while $FK_i$ is a foreign key feature that refers to $\textbf{R}_i$. 
+of $\textbf{R}_i$, while $FK_i$ is a foreign key feature that refers to $\textbf{R}_i$. We call $\textbf{X}_S$ \textit{home} features and $\textbf{X}_{R_i}$ \textit{foreign} features.
 For ease of exposition, we also treat \textbf{X} as a \textit{set} of features since the order among features is immaterial in our setting.
-Let \textbf{T} denote the output of the projected equi-join query that constructs the full training dataset by \textit{concatenating} the features from all base tables: 
-$\textbf{T} \leftarrow \pi(\textbf{R} \bowtie_{RID=FK} \textbf{S})$. In general, its schema is 
+Let \textbf{T} denote the output of the projected equi-join (key-foreign key, or KFK for short) query that constructs the full training dataset by 
+\textit{concatenating} the features from all base tables: $\textbf{T} \leftarrow \pi(\textbf{R} \bowtie_{RID=FK} \textbf{S})$. In general, its schema is 
 $\textbf{T}(\underline{SID},Y,\textbf{X}_S,FK_1,\dots,FK_k,\textbf{X}_{R_1},\dots,\textbf{X}_{R_k})$.
+In contrast to our setting, traditional ML formulations do not distinguish between home features, foreign keys, and foreign features.\footnote{Note that this setting is 
+different from the statistical relational learning (SRL) setting in which the joins could violate the IID assumption because they are not KFK (labeled examples in \textbf{S}
+might get duplicated. KFK joins do not cause such repetitions.}
 
 \paragraph*{Example}
 Consider a common classification task for which ML classifiers are used, predicting \textit{customer churn}.
@@ -124,9 +127,10 @@ For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as 
 
 \paragraph*{Scenario OneXr}
 
-\paragraph*{Scenario XSXR}
-
 \paragraph*{Scenario SkewedFK}
+
+
+\paragraph*{Scenario XSXR}
 
 
 \subsection{Explanation and Open Questions}
