@@ -147,7 +147,7 @@ For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as 
 Clearly, foreign keys often act as good representatives of foreign features for \textit{accuracy}.
 But they often pose a practical bottleneck for \textit{interpretability} due to the sheer size of their domains.
 For example, it is nearly impossible to visualize a decision tree that uses a foreign key feature with 1000s of domain values.
-Thus, to make foreign key features more practical, we propose a simple solution: \textit{compress} their domains to a (much) smaller 
+Thus, to make foreign key features more practical, we consider a simple approach: \textit{compress} their domains to a (much) smaller 
 user-defined domain size. This is inspired by the hashing trick~\cite{hashingtrick} but instead of an unsupervised random 
 compression, we propose a deterministic supervised compression that optimizes some criterion related to accuracy. A key benefit of 
 this approach is potentially higher accuracy, while obtaining an interpretable grouping of domain values.
@@ -179,13 +179,39 @@ $\mathcal{D}_{FK}$. We simply construct $f$ using this partitioning information.
 approach to merge the subsets until we end up with $l$ subsets. Finally, if $r < l$, we simply leave the partitioning as is because we already satisfy the user's budget;
 the co-domain of $f$ is then only $[r]$ instead of $[l]$. This approach utilizes both the training and validation splits for learning the best decision tree that includes $FK$, with .
 
-We now empirically compare the accuracy of the above two heuristics against the hashing trick as a baseline with $l$ as the number of buckets.
-We use the real datasets for this experiment and our methodology is as follows.
-We retain the 50:25:25 train-validate-test split. \textit{SortBased}, hashing, and PCA use the training split to perform the domain compression. Since \textit{TreeBased} requires 
-learning a decision tree, we use the validation set as before to tune the hyper-parameters. Given the compressed domain, we 
+We now empirically compare the accuracy of the above two heuristics against random hashing as a baseline with $l$ as the number of buckets. 
+We use the real-world datasets for this experiment and our methodology is as follows. We retain the 50:25:25 train-validate-test split.
+\textit{SortBased} and random hashing use just the training split to construct $f$ and then compress $FK$ for the whole dataset. We then use
+the validation set as before to tune the hyper-parameters and measure the holdout test error. For random hashing, we report the average across 
+five runs. For \textit{TreeBased}, we first learn a decision tree using the original training and validation sets, construct $f$ and compress 
+$FK$ for the whole dataset, and then measure the holdout test error.
 
 
-\subsubsection{Foreign Key Smoothing using Foreign Features}
+\subsubsection{Foreign Key Smoothing}
+
+A closely related issue caused by a large $|\mathcal{D}_{FK}|$ is that some $FK$ values might not be present in the training set but arise 
+in the test set or during deployment. Note that this issue is different from the cold start issue because $\mathcal{D}_{FK}$ is still closed 
+in this setting. This issue arises because there are simply not enough labeled examples to cover 
+all of $\mathcal{D}_{FK}$ during training. Typically, this issue is handled using some form of \textit{smoothing}, e.g., Laplacian smoothing
+for Naive Bayes by adding a pseudocount of $1$ to all frequency counts~\cite{mitchellbook}.
+While similar smoothing techniques have been studied for probability estimation using decision trees~\cite{pedro2003}, to the best of our knowledge, 
+this issue has not been handled in general for classification using decision trees. In fact, popular decision tree implementations in R simply 
+crash if a value of $FK$ not seen during training arises during testing! Note that SVMs (or any other classifier operating on numeric 
+feature spaces) do not face this issue due to the one-hot recoding of $FK$. 
+
+We consider a simple approach to mitigate this issue: smooth by \textit{reassigning} an $FK$ value not seen during training to an $FK$ value 
+seen during training. There are various ways to reassign; for simplicity sake, we only study two lightweight unsupervised methods. 
+We use \textit{random} reassignment as a baseline but then study an alternative approach suited to our problem setting: use the foreign features 
+($\textbf{X}_R$) to decide the reassignment. This is a natural choice because \textbf{R} provides auxiliary descriptive information about $FK$.
+Our algorithm is simple: given a test example with $FK$ not seen during training, obtain an $FK$ seen during training whose corresponding 
+$\textbf{X}_R$ feature vector has the minimum $l_0$ distance with the test example's $\textbf{X}_R$ (ties broken randomly). The $l_0$ distance is
+simply the count of the number of pairwise mismatches of the respective features in the two $\textbf{X}_R$ feature vectors. 
+
+The intuition for $\textbf{X}_R$-based smoothing is that if $\textbf{X}_R$ is part of the ``true'' distribution, it can provide better accuracy 
+than random reassignment. But if $\textbf{X}_R$ is simply noise, it becomes similar to random reassignment.
+To demonstrate our point, we now empirically compare their accuracy using our OneXr simulation scenario. Recall that a feature $X_r \in \textbf{X}_R$
+determines the target (with some Bayes noise as before). We introduce a parameter $\gamma$ that is the ratio of the number of $FK$ values not seen 
+during training to $|\mathcal{D}_{FK}|$. If $\gamma = 0$, no smoothing is needed; as $\gamma$ increases, more smoothing is needed.
 
 
 
