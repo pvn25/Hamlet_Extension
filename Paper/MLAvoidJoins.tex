@@ -67,6 +67,117 @@
 
 \section{Introduction}
 
+Real-world relational databases typically contain multiple tables connected by \textit{database dependencies}~\cite{cowbook}. Thus, a common pre-processing step 
+performed by data scientists when learning an ML model is to \textit{join} all tables they think might provide ``useful'' features for their prediction 
+task~\cite{jiaweijoin,orion,libfm,hamlet,olteanuf}.
+But in general, an arbitrary join might duplicate some records in the table with the target, thus violating the ``IID'' sampling assumption~\cite{hastie}. 
+In response, ``non-IID'' statistical relational learning (SRL) models have been studied extensively by both the ML and data mining communities~\cite{getoor}. 
+However, an important class of problems have largely fallen through the cracks in this stark dichotomy: 
+joins that do \textit{not} duplicate records, viz., \textit{key-foreign key} (KFK) joins, and thus, do not technically violate the IID sampling assumption.
+
+\paragraph*{Example (based on~\cite{orion})}
+Consider an insurance data scientist using ML for a common classification task: predicting \textit{customer churn}. She starts with the main table (simplified 
+for exposition): \texttt{Customers} (\underline{\texttt{CustomerID}}, \texttt{Churn}, \texttt{Gender}, \texttt{Age}, \texttt{Employer}). 
+Here, \texttt{Churn} is the target, while \texttt{Gender}, \texttt{Age}, and \texttt{Employer} are features. So far, this is just a standard classification task.  
+But then, she realizes that she also has the table \texttt{Employers} (\underline{\texttt{Employer}}, \texttt{State}, \texttt{Revenue}) with extra information about customers' employers 
+(e.g., Google, Microsoft, etc.) in her database. \texttt{Customers}.\texttt{Employer} turns out to be a \textit{foreign key} that connects these two tables. 
+She joins these two tables to bring in the extra features because she has a hunch that customers employed by rich corporations in coastal states are perhaps 
+less likely to churn. She then tries different classifiers such as logistic regression and decision trees.
+
+The join in our example is a KFK join that does not duplicate records: a customer has exactly one employer but many customers might have the same employer.
+SRL models might be an overkill for such settings. Our example is not a one-off case; 
+from coversations with data scientists in various domains -- insurance, retail, telecommunications, Web security, Web advertising, and e-commerce -- 
+we learned that they routinely perform such KFK joins before learning ML models such as logistic regression, Naive Bayes, decision trees, SVMs, etc. This is in part due to the
+ubiquity of KFK dependencies (KFKDs) in databases, in particular, the so-called ``star schema'' KFKDs~\cite{cowbook}, which is what we focus on in this work. In a star schema,
+there is a central table called the ``fact'' table with foreign keys pointing to other tables called ``dimension tables.'' In our example, \texttt{Customers} is the fact table, 
+while \texttt{Employers} is a dimension table. As another example, in a recommendation system, the ratings table is the fact table, while tables about users and products are 
+dimension tables (Section 3.1 gives more real-world examples). We call the features from the dimension tables \textit{foreign features}.
+
+Foreign features provide more coarse-grained information than a foreign key feature, which could be helpful for \textit{interpretability} purposes. 
+But from an ML \textit{accuracy} (generalization error) perspective, an interesting question to answer is the following: 
+
+\begin{center}\textit{Are foreign features really ``needed'' to improve ML accuracy?}\end{center}
+
+At first glance, this question might seem surprising and counter-intuitive. Why bother avoiding foreign features? And why would foreign features behave any differently from other features? 
+
+The answer to the first question is clear: avoiding foreign features reduces the total number of features \textit{without running any computations}, 
+which reduces the runtimes of ML and feature selection methods~\cite{guyon}; moreover, join computation times are also saved. 
+Furthermore, worrying about fewer tables (and features) could help data scientists' productivity. For example, our conversations revealed that often, different tables 
+are ``owned'' by different teams even within the same company, which causes logistical headaches for data scientists when procuring extra dimension tables.
+
+The answer to the second question hinges on an obvious but key observation: \textit{given the foreign key, all foreign features are fixed}. 
+Note that the KFK join causes as \textit{functional dependency} (FD) between the foreign key and foreign features. 
+Formally, foreign features are \textit{redundant}, given the foreign key. 
+So, a tempting conclusion is that foreign features are never needed (for accuracy) and KFK joins can always be avoided! Alas, recent work poured cold water
+on this possibility: using a foreign key feature instead of foreign features often causes \textit{overfitting} even for simple \textit{linear} VC-dimension classifiers such as 
+logistic regression and Naive Bayes~\cite{hamlet}. This is because foreign key features typically have much larger domains than foreign features (in our example, 
+there are millions of employers but only $50$ states). Only when the number of training examples is far higher than the number of foreign key values ($>20$x) does the overfitting subside.
+
+In this paper, we revisit the above question for complex classifiers with \textit{infinite} VC-dimension. In particular, we focus on two popular classifiers: 
+decision tree and SVM with RBF kernel. The natural expectation is that these models would exhibit a more serious overfitting effect compared to linear models. 
+Surprisingly, our extensive empirical and simulation analyses show that the effect is the \textit{exact opposite}! We start by learning a decision tree and an RBF-SVM
+on all of the real-world datasets from~\cite{hamlet}. For both classifiers, it turns out that almost all of the dimension tables can be ``safely'' avoided, while only 
+about half of those were safe to avoid for the linear classifiers.
+
+To understand the above behavior in depth, we conduct an extensive Monte Carlo simulation study using a decision tree. We generate synthetic data for a two-table KFK join using 
+different controlled ``true'' data distributions for generating the target. This includes two opposite extreme scenarios: one in which a lone foreign feature succinctly 
+determines the target (the worst-case scenario for avoiding foreign features with linear models~\cite{hamlet}) and one in which all features determine the target. 
+Regardless of the scenario, even when the number of training examples is only about $3$x the number of foreign key values, avoiding foreign 
+features does not worsen the accuracy (measured as \textit{holdout} test error) significantly. We slice and dice the properties of the data along various parameters: numbers of features 
+in each base table, numbers of training examples, foreign key domain size, noise in the data, and skew in the foreign key feature's distribution. In almost none of these cases 
+did avoiding foreign features cause the error to go up significantly. This is in stark constrast to the results for linear models~\cite{hamlet}.
+
+Our results raise open questions for ML theoretical research to exaplin the above behavior of decision trees and RBF-SVMs. As a step in this direction, 
+we propose and analyze an important (albeit synthetic) scenario that sheds some light into their behavior. 
+We extend the worst-case scenario for linear models by replicating a foreign feature that determines the target many times. The idea is to make a model that uses 
+the foreign key feature alone to overfit more than one that uses the foreign features. In particular, for the RBF-SVM, this scenario demonstrates that it behaves 
+more similarly to a 1-nearest neighbor classifier when using the foreign key feature but less so when the number of relevant foreign features are increased.
+Of course, more open questions remain and we hope our results contribute to more discussions on this topic.
+
+Finally, from follow-up conversations with some data scientists, we learned that some of them have started using foreign key features as representatives of foreign features and avoiding 
+KFK joins in their prediction tasks~\cite{conv}. However, when dealing with decision trees, two new practical bottlenecks arise in some cases. The first is that the sheer size of a foreign 
+key feature's domain makes it hard to interpret and visualize the trees. The second is that some foreign key values that are part of the domain may not have any training examples. 
+We propose simple but effective heuristics to handle each of these bottlenecks and make foreign key features more practical. To handle the first bottleneck, we propose two lossy
+\textit{domain compression} methods to group multiple foreign key values to a single value. Our compression is configurable with a user-given budget. Using the real datasets, 
+we show that our methods outperform a random hashing baseline. To handle the second bottleneck, we propose a form of foreign key \textit{smoothing} that exploits the foreign features. 
+Using both synthetic and real datasets, we again show that our method outperforms a random hashing baseline.
+
+\vspace{1mm}
+\noindent Overall, the contributions of this paper are as follows:
+
+\begin{packeditems}
+\item To the best of our knowledge, this is the first paper to study the effects of discarding foreign features and KFK joins on infinite VC-dimension classifiers.
+We present an empirical study with several real-world datasets that shows that decision trees and RBF-SVMs are surprisingly robust to discarding foreign features.
+
+\item We perform comprehensive and in-depth simulation study with a decision tree to assess the effects of different data properties on whether foreign features are safe to discard.
+
+\item We take a step towards formally explaining the behavior of decision trees on RBF-SVMs in our setting and identify some open questions for theoretical research.
+
+\item We identify two practical bottlenecks with foreign key features and resolve them with simple but effective heuristics.
+\end{packeditems}
+
+
+\paragraph*{Outline.} In the rest of this section, we discuss related prior work. Section 2 presents our notation, problem scope, and assumptions. 
+Section 3 presents results from the real dataset, while Section 4 presents our deep-dive simulation study and analysis. Section 5 presents our techniques to make foreign key features
+more practical. We conclude in Section 6.
+
+\subsection*{Related Work}
+
+\paragraph*{Database dependencies and ML}
+
+Avoiding features using KFKFDs
+
+FDs in feature selection
+
+MVDs and BayesNets
+
+SRL
+
+\paragraph*{Feature selection}
+
+Redundancy-relevancy trade-off
+
+Handling large domain features
 
 
 \section{Preliminaries}
@@ -215,9 +326,10 @@ during training to $|\mathcal{D}_{FK}|$. If $\gamma = 0$, no smoothing is needed
 
 
 
-\section{Related Work}
 
 \section{Conclusion and Future Work}
+
+
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{MLAvoidJoins}
