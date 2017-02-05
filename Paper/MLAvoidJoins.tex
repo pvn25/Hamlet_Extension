@@ -106,7 +106,7 @@ Furthermore, worrying about fewer tables (and features) could help data scientis
 are ``owned'' by different teams even within the same company, which causes logistical headaches for data scientists when procuring extra dimension tables.
 
 The answer to the second question hinges on an obvious but key observation: \textit{given the foreign key, all foreign features are fixed}. 
-Note that the KFK join causes as \textit{functional dependency} (FD) between the foreign key and foreign features. 
+Note that the KFK join causes a \textit{functional dependency} (FD) between the foreign key and foreign features. 
 Formally, foreign features are \textit{redundant}, given the foreign key. 
 So, a tempting conclusion is that foreign features are never needed (for accuracy) and KFK joins can always be avoided! Alas, recent work poured cold water
 on this possibility: using a foreign key feature instead of foreign features often causes \textit{overfitting} even for simple \textit{linear} VC-dimension classifiers such as 
@@ -125,14 +125,14 @@ determines the target (the worst-case scenario for avoiding foreign features wit
 Regardless of the scenario, even when the number of training examples is only about $3$x the number of foreign key values, avoiding foreign 
 features does not worsen the accuracy (measured as \textit{holdout} test error) significantly. We slice and dice the properties of the data along various parameters: numbers of features 
 in each base table, numbers of training examples, foreign key domain size, noise in the data, and skew in the foreign key feature's distribution. In almost none of these cases 
-did avoiding foreign features cause the error to go up significantly. This is in stark constrast to the results for linear models~\cite{hamlet}.
+does avoiding foreign features cause the error to go up significantly. This is in stark constrast to the results for linear models~\cite{hamlet}.
 
-Our results raise open questions for ML theoretical research to exaplin the above behavior of decision trees and RBF-SVMs. As a step in this direction, 
-we propose and analyze an important (albeit synthetic) scenario that sheds some light into their behavior. 
-We extend the worst-case scenario for linear models by replicating a foreign feature that determines the target many times. The idea is to make a model that uses 
+Our counter-intuitive and surprising empirical and simulation results raise  open questions for ML theoretical research to explain the above behavior of 
+decision trees and RBF-SVMs. As a step in this direction, we propose and analyze a key synthetic scenario that sheds some light into their behavior. 
+We extend the worst-case simulation scenario for linear models by replicating the foreign feature that determines the target multiple times. The idea is to make a model that uses 
 the foreign key feature alone to overfit more than one that uses the foreign features. In particular, for the RBF-SVM, this scenario demonstrates that it behaves 
 more similarly to a 1-nearest neighbor classifier when using the foreign key feature but less so when the number of relevant foreign features are increased.
-Of course, more open questions remain and we hope our results contribute to more discussions on this topic.
+Of course, more open questions remain and we hope our results contribute to more discussions and research on this topic.
 
 Finally, from follow-up conversations with some data scientists, we learned that some of them have started using foreign key features as representatives of foreign features and avoiding 
 KFK joins in their prediction tasks~\cite{conv}. However, when dealing with decision trees, two new practical bottlenecks arise in some cases. The first is that the sheer size of a foreign 
@@ -151,14 +151,14 @@ We present an empirical study with several real-world datasets that shows that d
 
 \item We perform comprehensive and in-depth simulation study with a decision tree to assess the effects of different data properties on whether foreign features are safe to discard.
 
-\item We take a step towards formally explaining the behavior of decision trees on RBF-SVMs in our setting and identify some open questions for theoretical research.
+\item We take a step towards formally analyzing the behavior of decision trees and RBF-SVMs in our setting and identify some open questions for theoretical research.
 
 \item We identify two practical bottlenecks with foreign key features and resolve them with simple but effective heuristics.
 \end{packeditems}
 
 
-\paragraph*{Outline.} In the rest of this section, we discuss related prior work. Section 2 presents our notation, problem scope, and assumptions. 
-Section 3 presents results from the real dataset, while Section 4 presents our deep-dive simulation study and analysis. Section 5 presents our techniques to make foreign key features
+\paragraph*{Outline.} In the rest of this section, we discuss related prior work and position our work in context. Section 2 presents our notation, problem scope, and assumptions. 
+Section 3 presents results on the real datasets, while Section 4 presents our in-depth simulation study and analysis. Section 5 presents our techniques to make foreign key features
 more practical. We conclude in Section 6.
 
 \subsection*{Related Work}
@@ -183,7 +183,7 @@ Handling large domain features
 \section{Preliminaries}
 We now explain our problem setting and notation, followed by an example. We then explain our assumptions and scope.
 
-\subsection{Problem Setting and Notation}
+\subsection{Notation}
 The setting we focus on is the following: the dataset has a set of tables in the so-called \textit{star schema}. 
 This database schemas is ubiquitous in diverse applications ranging from insurance to recommendation systems~\cite{cowbook}.
 The ``fact'' table is denoted \textbf{S} and it has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_k)$,
@@ -198,6 +198,7 @@ In contrast to our setting, traditional ML formulations do not distinguish betwe
 different from the statistical relational learning (SRL) setting in which the joins could violate the IID assumption because they are not KFK (labeled examples in \textbf{S}
 might get duplicated. KFK joins do not cause such repetitions.}
 
+\eat{
 \paragraph*{Example}
 Consider a common classification task for which ML classifiers are used, predicting \textit{customer churn}.
 The fact table is \texttt{Customers} (\underline{\texttt{CustomerID}}, \texttt{Churn}, \texttt{Gender}, \texttt{Age}, \texttt{Employer}, \texttt{ZipCode}).
@@ -206,6 +207,7 @@ where a customer lives. The respective dimension tables are \texttt{Employers} (
 and \texttt{Areas} (\underline{ZipCode}, \texttt{CrimeRate}, \texttt{AccidentRate}).
 In such scenarios, data scientists typically join all base tables to bring in the extra features from the dimension tables. In this case, they might do so 
 because of a hunch that customers employed by rich corporations in coastal states and living in ``safe'' areas are unlikely to churn.
+}
 
 \subsection{Assumptions and Scope}
 For the sake of tractability, in this paper, we assume that all features are \textit{nominal} (categorical).\footnote{Numeric features can be discretized 
@@ -220,10 +222,7 @@ For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as 
 
 
 
-
-\section{Discarding Dimension Tables}
-
-\subsection{Empirical Study with Real Data}
+\section{Empirical Study with Real Data}
 
 \paragraph*{Datasets}
 
@@ -232,16 +231,17 @@ For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as 
 \paragraph*{Gaussian SVM}
 
 
-\subsection{Drill-down Simulation Study}
+\section{In-depth Simulation Study}
 
 \paragraph*{Setup and Data Synthesis}
 
-\paragraph*{Scenario OneXr}
+
+\subsection{Scenario OneXr}
 
 \paragraph*{Scenario SkewedFK}
 
 
-\paragraph*{Scenario XSXR}
+\subsection{Scenario XSXR}
 
 
 \subsection{Explanation and Open Questions}
@@ -251,9 +251,9 @@ For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as 
 \paragraph*{Gaussian SVM}
 
 
-\subsection{Making Foreign Key Features Practical}
+\section{Making Foreign Key Features Practical}
 
-\subsubsection{Foreign Key Domain Compression}
+\subsection{Foreign Key Domain Compression}
 
 Clearly, foreign keys often act as good representatives of foreign features for \textit{accuracy}.
 But they often pose a practical bottleneck for \textit{interpretability} due to the sheer size of their domains.
@@ -298,7 +298,7 @@ five runs. For \textit{TreeBased}, we first learn a decision tree using the orig
 $FK$ for the whole dataset, and then measure the holdout test error.
 
 
-\subsubsection{Foreign Key Smoothing}
+\subsection{Foreign Key Smoothing}
 
 A closely related issue caused by a large $|\mathcal{D}_{FK}|$ is that some $FK$ values might not be present in the training set but arise 
 in the test set or during deployment. Note that this issue is different from the cold start issue because $\mathcal{D}_{FK}$ is still closed 
