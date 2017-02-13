@@ -245,9 +245,32 @@ In order to evaluate classification performance of the decision tree, we perform
 
 \section{In-depth Simulation Study}
 
-
+We now present a simulation study to dive into the behavior of the decision tree classifier as we vary the 
+properties of the underlying ``true'' data distribution. We focus on a simple two-table KFK join and sample datasets of 
+different dimensions (numbers of tuples and numbers of features).
+We use the decision tree classifier as the representative for this study because it exhibited the highest robustness to 
+discarding dimension tables on the real datasets. Our simulation study will ``stress test'' its robustness.
+But note that our simulation methodology is generic enough to be applicable to any other classifier because we only use 
+standard generic notions of of error and variance.
 
 \paragraph*{Setup and Data Synthesis}
+There is one attribute table \textbf{R} ($k=1$), and all of $\textbf{X}_S$, $\textbf{X}_R$, and $Y$ are boolean (domain size $2$).
+We control the ``true'' distribution $P(Y,\textbf{X})$ and sample labeled examples in an IID manner from it.
+We study two different scenarios for what features \textbf{X} are used in $P$: \texttt{OneXr} and \texttt{XSXR}.
+These scenarios represent opposite extremes for how likely the (test) error is likely to shoot up when $\textbf{X}_R$ is discarded
+and $FK$ is used as a representative~\cite{hamlet}. In the \texttt{OneXr} scenario, a lone feature $X_r \in \textbf{X}_R$ is 
+what is the only feature used in $P$; the rest of $\textbf{X}_R$ and $\textbf{X}_S$ are random noise (but note that $FK$ will not 
+be noise because it functionally determines $X_r$). In the \texttt{XSXR} scenario, all features in $\textbf{X}_S$ and $\textbf{X}_R$
+are used in $P$. Intuitively, \texttt{OneXr} is the worst-case scenario for discarding $\textbf{X}_R$ because $X_r$ is typically 
+far more succinct than $FK$, which we expect to translate to less possibility of overfitting with NoJoin. Note that if we use $FK$ 
+directly in $P$, $\textbf{X}_R$ can be more easily discarded because $FK$ conveys more information anyway; so, we skip this scenario.
+
+The following data parameters are varied one at a time: number of training examples ($n_S$), size of foreign key domain ($|\mathcal{D}_{FK}|$ $=n_R$),
+number of features in $\textbf{X}_R$ ($d_R$), and number of features in $\textbf{X}_S$ ($d_S$). We also sample $\frac{n_S}{4}$ examples each for the 
+validation set (for hyper-parameter tuning) and the holdout test set (final indicator of error).
+We generate $100$ different training datasets and measure the average test error and average net variance (as defined in~\cite{pedrobvd}) 
+based on the different models obtained from these $100$ runs.
+
 
 \begin{figure*}
 \centering
@@ -255,17 +278,24 @@ In order to evaluate classification performance of the decision tree, we perform
 \caption{OneXr simulation}
 \label{Figure:OneXrSimulation}
 \end{figure*}
+
 \subsection{Scenario OneXr}
+In this scenario, the ``true'' distribution is set as follows: $P(Y=0|X_r=0)=P(Y=1|X_r=1)=p$, where $p$ is called the probability skew parameter.
+Figure~\ref{Figure:OneXrSimulation} presents the results for varying
+
+
 \begin{figure*}
 \centering
 \includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{onexr_zipf.png}
 \caption{OneXr Zipfian simulation}
 \label{Figure:OneXrZipfSimulation}
 \end{figure*}
+
 \paragraph*{Scenario SkewedFK}
 
 
 \subsection{Scenario XSXR}
+
 \begin{figure*}
 \centering
 \includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{xsxr.png}
