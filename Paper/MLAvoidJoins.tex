@@ -118,10 +118,10 @@ there are millions of employers but only $50$ states). Only when the number of t
 \textit{In this paper, we revisit the above question of whether foreign features are needed for accuracy for two popular \textit{infinite} VC-dimension classifiers: 
 decision tree and SVM with RBF kernel.}
 
-The natural expectation is that these more complex models would exhibit a more serious overfitting effect compared to linear models. 
-Surprisingly, our extensive empirical and simulation analyses show that the result is the \textit{exact opposite}! We start by presenting the empirical results on the 
-real-world datasets with KFK joins from~\cite{hamlet}. For both classifiers, it turns out that in \textit{almost all cases}, dimension tables can be safely 
-discarded~ In contrast, for linear classifiers, the dimension tables could be avoided in only half of the cases.
+The natural expectation is that such complex models might face even higher overfitting than linear models if foreign features are discarded. 
+Surprisingly, our extensive empirical and simulation analyses show that their behavior is the \textit{exact opposite}! We start by presenting empirical results on the 
+real datasets with KFK joins from~\cite{hamlet}. For both classifiers, it turns out that in \textit{almost all cases}, dimension tables can be safely 
+discarded. In contrast, for linear classifiers, they could be discarded in only half of the cases.
 
 To understand the above surprising behavior in depth, we conduct an extensive simulation study using a decision tree. We generate data for a two-table KFK join 
 and embed various ``true'' distributions for the target. This includes a known ``worst-case'' scenario for discarding foreign features a priori when learning a linear model, 
@@ -131,8 +131,8 @@ In very few of these cases does discarding foreign features cause the error to r
 overfitting significantly is when the number of training examples is less than $3$x the number of foreign key values. This scenario arose in only one of the seven real datasets.
 These results are in stark constrast to the results for linear models.
 
-Our counter-intuitive empirical and simulation results raise open questions for ML theoretical research about why decision trees and RBF-SVMs are able to generalize so well 
-on such data even though they have infinite VC dimensions. As a step in this direction, we propose and analyze a key synthetic scenario that sheds some light into their behavior. 
+Our counter-intuitive empirical and simulation results raise open questions for ML theoretical research about why decision trees and RBF-SVMs are so robust to discarding 
+foreign features even though they have infinite VC dimensions. As a step in this direction, we propose and analyze a key synthetic scenario that sheds some light into their behavior. 
 We intuitively explain why decision trees are so robust when operating with the foreign key feature and often ignore foreign features. We also show that RBF-SVMs with foreign key 
 features behave similar to a 1-nearest neighbor classifier due to the high dimensionality of foreign key features with one-hot encoding.
 Still, more open questions remain; we hope our results contribute to more discussions and research on this topic.
@@ -146,7 +146,7 @@ more similarly to a 1-nearest neighbor classifier when using the foreign key fea
 Finally, from follow-up conversations with some data scientists, we learned that while they found foreign key features to be helpful for accuracy, they faced two new practical 
 bottlenecks when using them for decision trees. The first is that the sheer size of a foreign key feature's domain makes it hard to interpret and visualize the trees. 
 The second is that some foreign key values may not have any training examples even if they are known to be in the domain. 
-We propose simple but effective heuristics to handle these bottlenecks and make foreign key features more practical. For the first bottleneck, we propose simply lossy 
+We propose simple but effective heuristics to handle these bottlenecks and make foreign key features more practical. For the first bottleneck, we propose simpl lossy 
 \textit{domain compression} methods that are configurable with a user-given size budget. For the second bottleneck, we propose a form of foreign key \textit{smoothing} 
 that exploits foreign features as side information. We validate the accuracy of these techniques using both real and synthetic datasets.
 
@@ -242,8 +242,9 @@ because of a hunch that customers employed by rich corporations in coastal state
 \subsection{Assumptions and Scope}
 For the sake of tractability, in this paper, we assume that all features are \textit{categorical} (nominal).\footnote{Numeric features can be discretized 
 using standard techniques, e.g., binning~\cite{mitchellbook}.} We also focus on binary classification but our ideas can be easily applied to multi-class targets as well.
-We assume that the foreign key features ($FK_i$) are not keys in the fact table, e.g., \texttt{ZipCode} does not uniquely identify a customer.
-Finally, we also do not study the ``cold start'' issue because it is orthogonal to the focus of this paper~\cite{coldstar}. In other words, we assume that all features, 
+We assume that the foreign key features ($FK_i$) are not (primary) keys in the fact table, e.g., \texttt{Employer} does not uniquely identify a customer.\footnote{Primary 
+keys in the fact table are \textit{not} generalizable features, unlike foreign keys.}
+Finally, we also do not study the ``cold start'' issue because it is orthogonal to the focus of this paper~\cite{coldstart}. In other words, we assume that all features 
 have known finite domains, possibly including a special ``Others'' placeholder to temporarily handle hitherto unseen values. In our example, this means that both 
 \texttt{Employer} and \texttt{Gender} have known finite domains. In general, $FK_i$ can take values only from the given set of $\textbf{R}_i.RID_i$ values 
 (new $FK_i$ values are mapped to ``Others''). Since ML models are rebuilt periodically in practice, new information can then be added to expand feature domains. 
@@ -255,7 +256,7 @@ classifiers: decision tree (CART) and RBF-SVM.
 
 \section{Empirical Study with Real Data}
 \paragraph*{Datasets}
-We take seven real normalized real-world datasets from ~\cite{arun}. The dataset statistics is provided in Table\ref{Table:datastats}.
+We take seven real normalized real-world datasets from ~\cite{hamlet}. The dataset statistics is provided in Table\ref{Table:datastats}.
 \begin{table}
 \centering
 \includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table1.png}
