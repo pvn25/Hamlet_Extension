@@ -280,9 +280,30 @@ based on the different models obtained from these $100$ runs.
 \end{figure*}
 
 \subsection{Scenario OneXr}
-In this scenario, the ``true'' distribution is set as follows: $P(Y=0|X_r=0)=P(Y=1|X_r=1)=p$, where $p$ is called the probability skew parameter.
-Figure~\ref{Figure:OneXrSimulation} presents the results for varying
+The ``true'' distribution is set as follows: $P(Y=0|X_r=0)=P(Y=1|X_r=1)=p$, where $p$ is called the probability skew parameter that controls the Bayes error (noise).
+The exact procedure for sampling examples is as follows: (1) Construct tuples of \textbf{R} by sampling $\textbf{X}_R$ values randomly (each feature value 
+is an independent coin toss). (2) Construct the tuples of \textbf{S} by sampling $\textbf{X}_S$ values randomly (independent coin tosses). (3) Assign $FK$ 
+values to \textbf{S} tuples uniformly randomly from $\mathcal{D}_{FK}$. (4) Assign $Y$ values to \textbf{S} tuples by looking up into their respective $X_r$ 
+value (implicit join on $FK = RID$) and sampling from the above true distribution.
 
+We compare three settings based on what features are used by the model: 
+\textit{UseAll}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK, \textbf{X}_R]$, \textit{NoJoin}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK]$ 
+(i.e., discard $\textbf{X}_R$), and \textit{NoFK}, which uses $\textbf{X} \equiv [\textbf{X}_S, \textbf{X}_R]$ (i.e., discard $FK$).
+Note that our hypothesis is that \textit{UseAll} and \textit{NoJoin} will exhibit similar errors in most cases, i.e., the foreign features 
+($\textbf{X}_R$) might not really help improve accuracy. We include \textit{NoFK} to provide a reasonable lower bound on errors, since we know $FK$ 
+is not directly a part of the true distribution.\footnote{In general, \textit{NoFK} could have much higher errors if $FK$ is part of the true distribution.}
+Figure~\ref{Figure:OneXrSimulation} presents the results for the (holdout) test errors for varying each relevant data and distribution parameter, one at a time.
+
+We see that regardless of the parameter being varied, in almost all cases, \textit{NoJoin} and \textit{JoinAll} have virtually identical errors (close to the Bayes 
+error)! From inspecting the actual decision trees learned in these two settings, we found that in almost all cases, $FK$ was used heavily for partitioning and seldom was 
+a feature from $\textbf{X}_R$, including $X_r$, used. This suggests that $FK$ can indeed act as a good representative of $\textbf{X}_R$ even in this extreme sccenario. 
+In contrast to these results,~\cite{hamlet} reported that for linear models, the errors of \textit{NoJoin} shot up compared to \textit{JoinAll} (a gap of nearly $0.05$)
+as the tuple ratio ($n_S : |\mathcal{D}_{FK}|$) starts falling below $20$. In stark contrast, as Figure~\ref{Figure:OneXrSimulation}(A2) shows, even for a tuple ratio of 
+just $3$, \textit{NoJoin} and \textit{JoinAll} have similar errors with the decision tree. When $n_S$ becomes very low or when $|\mathcal{D}_{FK}$ becomes very high,
+the absolute errors of \textit{JoinAll} and \textit{NoJoin} increase compared to \textit{NoFK}. This suggests that even though \textit{NoJoin} is comparable to 
+\textit{JoinAll}, in regimes with very low tuple ratios, \textit{NoFK} is also worth trying. This is similar to the behavior seen on the Yelp dataset, since the tuple 
+ratio for the user table was $< 3$. In almost all the other real datasets, we did not need to drop the foreign key features and \textit{NoJoin} sufficed.
+Overall, we see that \textit{NoJoin} exhibits similar behavior as the state-of-the-art \textit{JoinAll} approach.
 
 \begin{figure*}
 \centering
@@ -291,10 +312,18 @@ Figure~\ref{Figure:OneXrSimulation} presents the results for varying
 \label{Figure:OneXrZipfSimulation}
 \end{figure*}
 
-\paragraph*{Scenario SkewedFK}
+\paragraph*{Scenario OneXrSkewedFK}
+The regular OneXr scenario samples $FK$ values in \textbf{S} uniformly randomly from $\mathcal{D}_{FK}$ (step 3 in the procedure). We now ask if a \textit{skew} in 
+the distribution of $FK$ values could widen the gap between \textit{JoinAll} and \textit{NoJoin}. To study this scenario, we modify the data generation procedure slightly:
+in step 3, we sample $FK$ values with a Zipfian skew or a needle-and-thread skew. The Zipfian skew simply uses a Zipfian distribution for $P(FK)$ controlled by the Zipfian
+skew parameter. The needle-and-thread skew allocates a large probability mass (parameter $p$) to a single $FK$ value (the ``needle'') and uniformly distributes the rest of 
+the probability mass to all other $FK$ values (the ``thread''). For the linear model case,~\cite{hamlet} reported that as the skew parameters increased, the gap widened.
+Figure~\ref{Figure:OneXrZipfSimulation} presents the results for the decision tree.
 
+Surprisingly, the gap between \textit{NoJoin} and \textit{JoinAll} does not widen significantly regardless of the amount of skew introduced in either the Zipfian case or
+the needle-and-thread case! This result further affirms the remarkable robustness of the decision tree in enabling us to discard foreign features. As expected, 
+\textit{NoFK} is better in the regime of very few training examples, while overall, \textit{NoJoin} is quite similar to \textit{JoinAll}.
 
-\subsection{Scenario XSXR}
 
 \begin{figure*}
 \centering
@@ -302,6 +331,28 @@ Figure~\ref{Figure:OneXrSimulation} presents the results for varying
 \caption{XsXr simulation}
 \label{Figure:XsXrSimulation}
 \end{figure*}
+
+\subsection{Scenario XSXR}
+Unlike the \textit{OneXr} scenario, we now create a true distribution that maps $\textbf{X} \equiv [\textbf{X}_S, \textbf{X}_R]$ to $Y$ without any Bayes error (noise).
+The exact procedure for sampling examples is as follows: (1) Construct a true probability table (TPT) with entries for all possible values of 
+$[\textbf{X}_S, \textbf{X}_R]$ and assign a random probability to each entry such that the total probability is $1$.
+(2) For each entry in the TPT, pick a $Y$ value randomly and append the TPT entry; this ensures $H(Y|\textbf{X}) = 0$.
+(3) Marginalize the TPT to obtain $P(\textbf{X}_R)$ and from it, sample $n_R = \mathcal{D}_{FK}$ tuples for \textbf{R} along with an associated sequential $RID$ value.
+(4) In the original TPT, push the probability of each entry to $0$ if its $\textbf{X}_R$ values did not get picked for \textbf{R} in step 3.
+(5) Renormalize the TPT so that the total probability is $1$ and sample $n_S$ examples ($Y$ values do not change) and construct \textbf{S}.
+(6) For each tuple in \textbf{S}, pick its $FK$ value uniformly randomly from the subset of $RID$ values that map to its $\textbf{X}_R$ value in \textbf{R} (an implicit join).
+
+We compare three settings: \textit{JoinAll}, \textit{NoJoin}, and \textit{NoFK}, with \textit{NoFK} meant to be a lower bound on the errors possible (because 
+it uses the knowledge that $FK$ is not directly a part of the true distribution). Once again, our hypothesis is that \textit{JoinAll} and \textit{NoJoin} will exhibit similar 
+errors in most cases, while \textit{NoFK} will perform better when the tuple ratio is low. Figure~\ref{Figure:XsXrSimulation} presents the results.
+
+Once again, we see that \textit{NoJoin} and \textit{JoinAll} exhibit similar errors in almost all cases, with the largest gap being $0.017$ in Figure~\ref{Figure:XsXrSimulation}(C)).
+Interestingly, even when the tuple ratio is close to $1$, the gap between \textit{NoJoin} and \textit{JoinAll} does not widen much. 
+Figure~\ref{Figure:XsXrSimulation}(B)) shows that as $|\mathcal{D}_{FK}|$ increases, \textit{NoFK} remains at low overall errors, unlike both \textit{JoinAll} and \textit{NoJoin}.
+But as we increase $d_R$ or $d_S$, the gap between \textit{JoinAll}/\textit{NoJoin} and \textit{NoFK} narrows because even \textit{NoFK} does not have enough training examples.
+Of course, all gaps virtually disappear as the number of training examples increases, as shown by Figure~\ref{Figure:XsXrSimulation}(A).
+Overall, we see that \textit{NoJoin} exhibits similar behavior as the state-of-the-art \textit{JoinAll} approach even in this scenario.
+
 
 \subsection{Explanation and Open Questions}
 
