@@ -69,7 +69,7 @@
 
 Real-world relational databases typically contain multiple tables connected by \textit{database dependencies}~\cite{cowbook}. Thus, a common pre-processing step 
 performed by data scientists when learning an ML model is to \textit{join} all tables they think might provide ``useful'' features for their prediction 
-task~\cite{jiaweijoin,orion,libfm,hamlet,olteanuf}.
+task~\cite{crossmine,orion,rendle,hamlet,olteanuf}.
 But in general, an arbitrary join might duplicate some records in the table with the target, thus violating the ``IID'' sampling assumption~\cite{hastie}. 
 In response, ``non-IID'' statistical relational learning (SRL) models have been studied extensively by both the ML and data mining communities~\cite{getoor}. 
 However, an important class of problems have largely fallen through the cracks in this stark dichotomy: 
@@ -85,15 +85,17 @@ She joins these two tables to bring in the extra features because she has a hunc
 less likely to churn. She then tries different classifiers such as logistic regression and decision trees.
 
 The join in our example is a KFK join that does not duplicate records: a customer has exactly one employer but many customers might have the same employer.
-SRL models might be an overkill for such settings. Our example is not a one-off case; 
+SRL models might be an overkill for such settings. Essentially, the foreign features that KFK joins bring are simply \textit{functions} of the foreign key feature;
+in database parlance, this relationship is called a \textit{functional dependency} (FD). This is analogous to appending arithmetic functions of existing numeric 
+features (e.g., squares or products). Our example is not a one-off case; 
 from coversations with data scientists in various domains -- insurance, retail, telecommunications, Web security, Web advertising, and e-commerce -- 
-we learned that they routinely perform such KFK joins before learning ML models such as logistic regression, Naive Bayes, decision trees, SVMs, etc. This is in part due to the
-ubiquity of KFK dependencies (KFKDs) in databases, in particular, the so-called ``star schema'' KFKDs~\cite{cowbook}, which is what we focus on in this work. In a star schema,
+we learned that they routinely perform such KFK joins before learning regular IID ML models such as logistic regression, SVMs, etc. KFK dependencies (KFKDs) are ubiquitous, 
+in particular, the so-called ``star schema'' KFKDs~\cite{cowbook}, which is our focus in this work. In a star schema, 
 there is a central table called the ``fact'' table with foreign keys pointing to other tables called ``dimension tables.'' In our example, \texttt{Customers} is the fact table, 
 while \texttt{Employers} is a dimension table. As another example, in a recommendation system, the ratings table is the fact table, while tables about users and products are 
 dimension tables (Section 3.1 gives more real-world examples). We call the features from the dimension tables \textit{foreign features}.
 
-Foreign features provide more coarse-grained information than a foreign key feature, which could be helpful for \textit{interpretability} purposes. 
+Since foreign features provide a more coarse-grained view than a foreign key feature, they could be helpful for \textit{interpretability} purposes. 
 But from an ML \textit{accuracy} (generalization error) perspective, an interesting question to answer is the following: 
 
 \begin{center}\textit{Are foreign features really ``needed'' to improve ML accuracy?}\end{center}
@@ -134,8 +136,8 @@ the foreign key feature alone to overfit more than one that uses the foreign fea
 more similarly to a 1-nearest neighbor classifier when using the foreign key feature but less so when the number of relevant foreign features are increased.
 Of course, more open questions remain and we hope our results contribute to more discussions and research on this topic.
 
-Finally, from follow-up conversations with some data scientists, we learned that some of them have started using foreign key features as representatives of foreign features and avoiding 
-KFK joins in their prediction tasks~\cite{conv}. However, when dealing with decision trees, two new practical bottlenecks arise in some cases. The first is that the sheer size of a foreign 
+Finally, from follow-up conversations with some data scientists, we learned that while they do sometimes foreign key features as representatives of foreign features, when 
+dealing with decision trees, two new practical bottlenecks arise in some cases. The first is that the sheer size of a foreign 
 key feature's domain makes it hard to interpret and visualize the trees. The second is that some foreign key values that are part of the domain may not have any training examples. 
 We propose simple but effective heuristics to handle each of these bottlenecks and make foreign key features more practical. To handle the first bottleneck, we propose two lossy
 \textit{domain compression} methods to group multiple foreign key values to a single value. Our compression is configurable with a user-given budget. Using the real datasets, 
@@ -163,21 +165,42 @@ more practical. We conclude in Section 6.
 
 \subsection*{Related Work}
 
-\paragraph*{Database dependencies and ML}
+We discuss the relationship of our work to key prior work from both the database, data mining, and ML literatures.
 
-Avoiding features using KFKFDs
+\paragraph*{Database Dependencies and ML}
+The scenario of learning over joins of multiple tables without materializing the output of the join was studied in~\cite{orion,olteanuf,rendle,santoku},
+but their goal was primarily to reduce runtimes of some ML techniques without affecting accuracy.
+In contrast, our work focuses on the more fundamental question of whether foreign features are even needed for accuracy in the first place for complex ML models
+such as decision trees and RBF-SVMs.
+We first demonstrated the feasibility of avoiding foreign features for linear VC dimension models such as logistic regression and Naive Bayes in~\cite{hamlet}.
+In this work, we revisit that idea by demonstrating that popular infinite VC dimension models are counter-intuitively \textit{more} robust than linear models to avoiding 
+foreign features, not \textit{less} as our VC dimension-based analysis in~\cite{hamlet} suggested. Further, we also evaluate mechanisms to make foreign key features more practical.
+Embedded multi-valued dependencies (EMVDs) are database dependencies that are more general than functional dependencies~\cite{dbtheorybook}. 
+The implication of EMVDs for probabilistic conditional independence in Bayesian networks was originally described by~\cite{pearl} and further explored by~\cite{wong}.
+However, exploiting EMVDs still requires computations over all features in the data instance. In contrast, our work demonstrates the dramatic effects of KFKDs and FDs 
+in enabling us to avoid entire sets of features for complex ML models \textit{without performing any computations} on the foreign features.
+There is a large body of work on statistical relational learning (SRL) to handle joins that cause duplicates in the fact table~\cite{srlbook}. But as mentioned before, 
+our work focuses on the regular IID setting for which SRL might be an overkill.
 
-FDs in feature selection
 
-MVDs and BayesNets
+\paragraph*{Feature Selection}
 
-SRL
+The data mining and ML communities have long studied the problem of feature selection to improve ML accuracy~\cite{guyonbook,hastie}.
+In contrast, our goal is \textit{not} to design new feature selection methods. Rather, we want to demonstrate that foreign features quite often do not help improve 
+accuracy when learning some popular complex ML classifiers. This can be viewed as a way of ``short-circuiting'' the feature selection process using database schema 
+information, with the aim of obviating large amounts of computations over foreign features.
+The trade-off between feature redundancy and relevancy is well-studied~\cite{guyonbook,leiyu,daphnekoller}. The conventional wisdom is that even a feature that is 
+redundant might be highly relevant and hence, unavoidable in the mix~\cite{guyonbook}. Our work establishes, perhaps surprisingly, that this is \textit{not} the case 
+for foreign features; even if a foreign feature is highly relevant, it can be safely discarded in most practical cases for decision trees and RBF-SVMs.
+There is prior work on exploiting FDs in feature selection.
+\cite{approxfds} infers approximate FDs using the dataset instance and exploits them during feature selection.
+FOCUS~\cite{focus} is an approach to bias the input and reduce the number of features by performing some computations over those features.
+Our work is orthogonal to all of these approaches that require computations over all features because we show that FDs caused by KFK joins imply that foreign features 
+can often be discarded when learning complex ML models \textit{without even looking at the features} and obviously, without performing any computations on them!
+To the best of our knowledge, no feature selection method has the radical capability that our work demonstrates.
+Unsupervised dimensionality reduction methods such as random hashing or PCA are also popular~\cite{hastie,mitchellbook}. Our lossy compression techniques to 
+reduce the domains of foreign key features for decision trees are inspired by such methods.
 
-\paragraph*{Feature selection}
-
-Redundancy-relevancy trade-off
-
-Handling large domain features
 
 
 \section{Preliminaries}
@@ -211,7 +234,7 @@ because of a hunch that customers employed by rich corporations in coastal state
 
 \subsection{Assumptions and Scope}
 For the sake of tractability, in this paper, we assume that all features are \textit{nominal} (categorical).\footnote{Numeric features can be discretized 
-using standard techniques, e.g., binning~\cite{mitchell}.} We also focus on binary classification but our ideas can be easily applied to multi-class targets as well.
+using standard techniques, e.g., binning~\cite{mitchellbook}.} We also focus on binary classification but our ideas can be easily applied to multi-class targets as well.
 We assume that the foreign key features ($FK_i$) are not keys in the fact table, e.g., \texttt{ZipCode} does not uniquely identify a customer.
 Finally, we also do not study the ``cold start'' issue because it is orthogonal to the focus of this paper. 
 In other words, we assume that individual feature values not seen during training do not arise during testing. 
