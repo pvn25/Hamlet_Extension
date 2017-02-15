@@ -227,21 +227,35 @@ For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as 
 We take seven real normalized real-world datasets from ~\cite{arun}. The dataset statistics is provided in Table\ref{Table:datastats}.
 \begin{table}
 \centering
-\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table1.png}
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table1.pdf}
 \caption{Dataset Statistics}
 \label{Table:datastats}
 \end{table}
 We compare \textit{JoinAll} that joins all the base tables with \textit{NoJoin} which avoids all the dimension tables. Each approach is paired with Decision tree (CART) and SVM with RBF kernel based classifier. We compare the total runtime to learn the model and predict the outcome. We have used standard holdout validation method with the fact table split randomly into 50\%:25\%:25\% for training, validation and testing. Since the number of classes in the target for all the 7 datasets is 2, we use zero-one error. 
-\begin{table}
+\begin{table*}
 \centering
-\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table2.png}
+\includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{table2.pdf}
 \caption{End-to-end results real data}
 \label{Table:svm_tree}
+\end{table*}
+\begin{table*}
+\centering
+\includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{table3.pdf}
+\caption{Performance accuracy for training data}
+\label{Table:svm_train_tree}
+\end{table*}
+\begin{table}
+\centering
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table4.pdf}
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table5.pdf}
+\caption{Robustness study}
+\label{Table:robustness}
 \end{table}
 \paragraph*{Decision Tree}
 In order to evaluate classification performance of the decision tree, we perform a set of 20 cross validation runs using \textit{minsplit} and \textit{cp} as parameters to classify each of the data sets. \textit{minsplit} defines the number of observations that must exist in a node for a split to be attempted and any split that does not improve the fit by a factor of \textit{cp} is pruned off by validation procedure.   
 \paragraph*{Gaussian SVM}
-
+For Gaussian SVM we use the e1071 package which is the interface to the popular libsvm libraries. Gaussian SVMs requires tuning two parameters- C and gamma. The parameter C controls the cost of misclassification. A small C(soft margin) makes the cost of misclassification low thus allowing more of data points to lie on the wrong side of the margin. Large C (hard margin) implies high cost of misclassification that can potentially overfit the data. The gamma is a parameter of gaussian kernel given by: \[ k(x_i,x_j) = \exp(-\gamma \cdot \lVert{x_i - x_j} \rVert ^2 ) for \gamma > 0 \].
+Where $x_{i}$ and $x_{j}$ are any two data points in the training dataset. A small $\gamma$ implies a gaussian with high variance and vice versa. The parameters C and gamma are determined by searching for maximum accuracy in the 2D-grid formed by different values of C and gamma on the validation set. C was sampled at $10^{-1}$, $10^{0}$, $10^{1}$, $10^{2}$, $10^{3}$ and gamma at $10^{-4}$, $10^{-3}$, $10^{-2}$, $10^{-1}$, $10^{0}$, $10^{1}$. Finally, the accuracies on hold out test data are reported in table\ref{Table:svm_tree}.
 
 \section{In-depth Simulation Study}
 
@@ -251,17 +265,39 @@ In order to evaluate classification performance of the decision tree, we perform
 
 \begin{figure*}
 \centering
-\includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{onexr.png}
+\includegraphics[width=2\columnwidth,height=2\textheight,keepaspectratio]{onexr_row1.pdf}
+
+\includegraphics[width=2\columnwidth,height=2\textheight,keepaspectratio]{onexr_row2.pdf}
 \caption{OneXr simulation}
 \label{Figure:OneXrSimulation}
 \end{figure*}
 \subsection{Scenario OneXr}
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{onexr_svm_1nn.pdf}
+\caption{OneXr simulation for 1nn and SVM}
+\label{Figure:OneXr1nnSVMSimulation}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{onexr_jerrydt.pdf}
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{onexr_jerrysvm.pdf}
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{onexr_jerry1nn.pdf}
+\caption{OneXr simulation for repeated Xr Features}
+\label{Figure:OneXrjerry}
+\end{figure}
+
+
 \begin{figure*}
 \centering
 \includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{onexr_zipf.png}
 \caption{OneXr Zipfian simulation}
 \label{Figure:OneXrZipfSimulation}
 \end{figure*}
+
+
 \paragraph*{Scenario SkewedFK}
 
 
@@ -326,7 +362,12 @@ the validation set as before to tune the hyper-parameters and measure the holdou
 five runs. For \textit{TreeBased}, we first learn a decision tree using the original training and validation sets, construct $f$ and compress 
 $FK$ for the whole dataset, and then measure the holdout test error.
 
-
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{smoothing.pdf}
+\caption{Smoothing where (A) denotes random based and (B) represents the xr based smoothing}
+\label{Figure:OneXr1nnSVMSimulation}
+\end{figure}
 \subsection{Foreign Key Smoothing}
 
 A closely related issue caused by a large $|\mathcal{D}_{FK}|$ is that some $FK$ values might not be present in the training set but arise 
