@@ -69,89 +69,97 @@
 
 Real-world relational databases typically contain multiple tables connected by \textit{database dependencies}~\cite{cowbook}. Thus, a common pre-processing step 
 performed by data scientists when learning an ML model is to \textit{join} all tables they think might provide ``useful'' features for their prediction 
-task~\cite{jiaweijoin,orion,libfm,hamlet,olteanuf}.
-But in general, an arbitrary join might duplicate some records in the table with the target, thus violating the ``IID'' sampling assumption~\cite{hastie}. 
-In response, ``non-IID'' statistical relational learning (SRL) models have been studied extensively by both the ML and data mining communities~\cite{getoor}. 
-However, an important class of problems have largely fallen through the cracks in this stark dichotomy: 
+task~\cite{crossmine,orion,rendle,hamlet,olteanuf}.
+But in general, an arbitrary join might duplicate records in the table with the target, thus violating the ``IID'' sampling assumption~\cite{hastie}. 
+In response, ``non-IID'' statistical relational learning (SRL) models have been studied extensively~\cite{srlbook}. 
+However, an important class of problems have fallen through the cracks in this dichotomy: 
 joins that do \textit{not} duplicate records, viz., \textit{key-foreign key} (KFK) joins, and thus, do not technically violate the IID sampling assumption.
 
 \paragraph*{Example (based on~\cite{orion})}
 Consider an insurance data scientist using ML for a common classification task: predicting \textit{customer churn}. She starts with the main table (simplified 
 for exposition): \texttt{Customers} (\underline{\texttt{CustomerID}}, \texttt{Churn}, \texttt{Gender}, \texttt{Age}, \texttt{Employer}). 
-Here, \texttt{Churn} is the target, while \texttt{Gender}, \texttt{Age}, and \texttt{Employer} are features. So far, this is just a standard classification task.  
-But then, she realizes that she also has the table \texttt{Employers} (\underline{\texttt{Employer}}, \texttt{State}, \texttt{Revenue}) with extra information about customers' employers 
-(e.g., Google, Microsoft, etc.) in her database. \texttt{Customers}.\texttt{Employer} turns out to be a \textit{foreign key} that connects these two tables. 
-She joins these two tables to bring in the extra features because she has a hunch that customers employed by rich corporations in coastal states are perhaps 
-less likely to churn. She then tries different classifiers such as logistic regression and decision trees.
+\texttt{Churn} is the target, while \texttt{Gender}, \texttt{Age}, and \texttt{Employer} are features. So far, this is a standard classification task.  
+But then, she notices that table \texttt{Employers} (\underline{\texttt{Employer}}, \texttt{State}, \texttt{Revenue}) in her database with extra features about 
+customers' employers (e.g., Google or Microsoft). \texttt{Customers}.\texttt{Employer} is then a \textit{foreign key} that connects these two tables. 
+She joins the tables to bring in the extra features because she has a hunch that customers employed by rich corporations in coastal states might be less likely 
+to churn. She then tries various classifiers, e.g., logistic regression or decision trees.
 
-The join in our example is a KFK join that does not duplicate records: a customer has exactly one employer but many customers might have the same employer.
-SRL models might be an overkill for such settings. Our example is not a one-off case; 
-from coversations with data scientists in various domains -- insurance, retail, telecommunications, Web security, Web advertising, and e-commerce -- 
-we learned that they routinely perform such KFK joins before learning ML models such as logistic regression, Naive Bayes, decision trees, SVMs, etc. This is in part due to the
-ubiquity of KFK dependencies (KFKDs) in databases, in particular, the so-called ``star schema'' KFKDs~\cite{cowbook}, which is what we focus on in this work. In a star schema,
-there is a central table called the ``fact'' table with foreign keys pointing to other tables called ``dimension tables.'' In our example, \texttt{Customers} is the fact table, 
-while \texttt{Employers} is a dimension table. As another example, in a recommendation system, the ratings table is the fact table, while tables about users and products are 
-dimension tables (Section 3.1 gives more real-world examples). We call the features from the dimension tables \textit{foreign features}.
+The join in our example is a KFK join that does not duplicate records: a customer has exactly one employer, although many customers might have the same employer.
+SRL is perhaps an overkill for this setting. In a sense, the features brought in by a KFK join, which we call \textit{foreign features}, are just \textit{functions} of 
+the foreign key feature; formally, this is called a \textit{functional dependency} (FD)~\cite{cowbook}.\footnote{Strictly speaking, an FD is different 
+from a Key-Foreign Key Dependency (KFKD)~\cite{dbtheorybook}, but for most practical purposes in ML, KFKDs behave just like FDs~\cite{hamlet}.} 
+An FD is analogous to arithmetic functions of numeric features (e.g., squares or products), except that foreign features typically provide a far more 
+\textit{coarse-grained view} than the foreign key feature that functionally determines them.
+Our example is not a one-off case; KFK joins are ubiquitous in various domains, including insurance, retail, telecommunications, Web security, 
+and e-commerce. In fact, from conversations with data scientists in these domains, we learned that they routinely perform such KFK joins before applying regular 
+IID ML classifiers (Section 3.1 gives more real-world examples). To introduce some terminology, the main table (\texttt{Customers} in our example)
+is often called the \textit{fact table}, while the table with the foreign features (\texttt{Employers}) is called a \textit{dimension table}~\cite{cowbook}.
 
-Foreign features provide more coarse-grained information than a foreign key feature, which could be helpful for \textit{interpretability} purposes. 
-But from an ML \textit{accuracy} (generalization error) perspective, an interesting question to answer is the following: 
+The coarse granularity of foreign features could indeed be helpful for \textit{interpretability} purposes. 
+But from an \textit{accuracy} (generalization) perspective, an interesting question to answer is the following: 
 
 \begin{center}\textit{Are foreign features really ``needed'' to improve ML accuracy?}\end{center}
 
-At first glance, this question might seem surprising and counter-intuitive. Why bother avoiding foreign features? And why would foreign features behave any differently from other features? 
+At first glance, this question might seem surprising and counter-intuitive. Why discard foreign features a priori? Why will foreign features 
+behave any differently than other features? 
 
 The answer to the first question is clear: avoiding foreign features reduces the total number of features \textit{without running any computations}, 
 which reduces the runtimes of ML and feature selection methods~\cite{guyon}; moreover, join computation times are also saved. 
 Furthermore, worrying about fewer tables (and features) could help data scientists' productivity. For example, our conversations revealed that often, different tables 
 are ``owned'' by different teams even within the same company, which causes logistical headaches for data scientists when procuring extra dimension tables.
 
-The answer to the second question hinges on an obvious but key observation: \textit{given the foreign key, all foreign features are fixed}. 
-Note that the KFK join causes a \textit{functional dependency} (FD) between the foreign key and foreign features. 
+The answer to the second question hinges on an obvious but key observation: \textit{given the foreign key, all foreign features are fixed} (the very definition of an FD!).
 Formally, foreign features are \textit{redundant}, given the foreign key. 
-So, a tempting conclusion is that foreign features are never needed (for accuracy) and KFK joins can always be avoided! Alas, recent work poured cold water
+So, a tempting conclusion is that foreign features (and KFK joins of this sort) are never needed for accuracy! Alas, recent work poured cold water
 on this possibility: using a foreign key feature instead of foreign features often causes \textit{overfitting} even for simple \textit{linear} VC-dimension classifiers such as 
 logistic regression and Naive Bayes~\cite{hamlet}. This is because foreign key features typically have much larger domains than foreign features (in our example, 
 there are millions of employers but only $50$ states). Only when the number of training examples is far higher than the number of foreign key values ($>20$x) does the overfitting subside.
 
-In this paper, we revisit the above question for complex classifiers with \textit{infinite} VC-dimension. In particular, we focus on two popular classifiers: 
-decision tree and SVM with RBF kernel. The natural expectation is that these models would exhibit a more serious overfitting effect compared to linear models. 
-Surprisingly, our extensive empirical and simulation analyses show that the effect is the \textit{exact opposite}! We start by learning a decision tree and an RBF-SVM
-on all of the real-world datasets from~\cite{hamlet}. For both classifiers, it turns out that almost all of the dimension tables can be ``safely'' avoided, while only 
-about half of those were safe to avoid for the linear classifiers.
+\textit{In this paper, we revisit the above question of whether foreign features are needed for accuracy for two popular \textit{infinite} VC-dimension classifiers: 
+decision tree and SVM with RBF kernel.}
 
-To understand the above behavior in depth, we conduct an extensive Monte Carlo simulation study using a decision tree. We generate synthetic data for a two-table KFK join using 
-different controlled ``true'' data distributions for generating the target. This includes two opposite extreme scenarios: one in which a lone foreign feature succinctly 
-determines the target (the worst-case scenario for avoiding foreign features with linear models~\cite{hamlet}) and one in which all features determine the target. 
-Regardless of the scenario, even when the number of training examples is only about $3$x the number of foreign key values, avoiding foreign 
-features does not worsen the accuracy (measured as \textit{holdout} test error) significantly. We slice and dice the properties of the data along various parameters: numbers of features 
-in each base table, numbers of training examples, foreign key domain size, noise in the data, and skew in the foreign key feature's distribution. In almost none of these cases 
-does avoiding foreign features cause the error to go up significantly. This is in stark constrast to the results for linear models~\cite{hamlet}.
+The natural expectation is that such complex models might face even higher overfitting than linear models if foreign features are discarded. 
+Surprisingly, our extensive empirical and simulation analyses show that their behavior is the \textit{exact opposite}! We start by presenting empirical results on the 
+real datasets with KFK joins from~\cite{hamlet}. For both classifiers, it turns out that in \textit{almost all cases}, dimension tables can be safely 
+discarded. In contrast, for linear classifiers, they could be discarded in only half of the cases.
 
-Our counter-intuitive and surprising empirical and simulation results raise  open questions for ML theoretical research to explain the above behavior of 
-decision trees and RBF-SVMs. As a step in this direction, we propose and analyze a key synthetic scenario that sheds some light into their behavior. 
+To understand the above surprising behavior in depth, we conduct an extensive simulation study using a decision tree. We generate data for a two-table KFK join 
+and embed various ``true'' distributions for the target. This includes a known ``worst-case'' scenario for discarding foreign features a priori when learning a linear model, 
+i.e., the (holdout) test errors blow up~\cite{hamlet}. We vary different properties of the data and the true distribution: 
+numbers of features in each base table, numbers of training examples, foreign key domain size, noise in the data, and foreign key skew. 
+In very few of these cases does discarding foreign features cause the error to rise significantly! Indeed, the only scenario where discarding foreign features seems to increase 
+overfitting significantly is when the number of training examples is less than $3$x the number of foreign key values. This scenario arose in only one of the seven real datasets.
+These results are in stark constrast to the results for linear models.
+
+Our counter-intuitive empirical and simulation results raise open questions for ML theoretical research about why decision trees and RBF-SVMs are so robust to discarding 
+foreign features even though they have infinite VC dimensions. As a step in this direction, we propose and analyze a key synthetic scenario that sheds some light into their behavior. 
+We intuitively explain why decision trees are so robust when operating with the foreign key feature and often ignore foreign features. We also show that RBF-SVMs with foreign key 
+features behave similar to a 1-nearest neighbor classifier due to the high dimensionality of foreign key features with one-hot encoding.
+Still, more open questions remain; we hope our results contribute to more discussions and research on this topic.
+
+\eat{
 We extend the worst-case simulation scenario for linear models by replicating the foreign feature that determines the target multiple times. The idea is to make a model that uses 
 the foreign key feature alone to overfit more than one that uses the foreign features. In particular, for the RBF-SVM, this scenario demonstrates that it behaves 
 more similarly to a 1-nearest neighbor classifier when using the foreign key feature but less so when the number of relevant foreign features are increased.
-Of course, more open questions remain and we hope our results contribute to more discussions and research on this topic.
+}
 
-Finally, from follow-up conversations with some data scientists, we learned that some of them have started using foreign key features as representatives of foreign features and avoiding 
-KFK joins in their prediction tasks~\cite{conv}. However, when dealing with decision trees, two new practical bottlenecks arise in some cases. The first is that the sheer size of a foreign 
-key feature's domain makes it hard to interpret and visualize the trees. The second is that some foreign key values that are part of the domain may not have any training examples. 
-We propose simple but effective heuristics to handle each of these bottlenecks and make foreign key features more practical. To handle the first bottleneck, we propose two lossy
-\textit{domain compression} methods to group multiple foreign key values to a single value. Our compression is configurable with a user-given budget. Using the real datasets, 
-we show that our methods outperform a random hashing baseline. To handle the second bottleneck, we propose a form of foreign key \textit{smoothing} that exploits the foreign features. 
-Using both synthetic and real datasets, we again show that our method outperforms a random hashing baseline.
+Finally, from follow-up conversations with some data scientists, we learned that while they found foreign key features to be helpful for accuracy, they faced two new practical 
+bottlenecks when using them for decision trees. The first is that the sheer size of a foreign key feature's domain makes it hard to interpret and visualize the trees. 
+The second is that some foreign key values may not have any training examples even if they are known to be in the domain. 
+We propose simple but effective heuristics to handle these bottlenecks and make foreign key features more practical. For the first bottleneck, we propose simpl lossy 
+\textit{domain compression} methods that are configurable with a user-given size budget. For the second bottleneck, we propose a form of foreign key \textit{smoothing} 
+that exploits foreign features as side information. We validate the accuracy of these techniques using both real and synthetic datasets.
 
 \vspace{1mm}
 \noindent Overall, the contributions of this paper are as follows:
 
 \begin{packeditems}
 \item To the best of our knowledge, this is the first paper to study the effects of discarding foreign features and KFK joins on infinite VC-dimension classifiers.
-We present an empirical study with several real-world datasets that shows that decision trees and RBF-SVMs are surprisingly robust to discarding foreign features.
+We present an empirical study with several real-world datasets that shows that decision trees and RBF-SVMs are surprisingly robust to discarding foreign features a priori.
 
-\item We perform comprehensive and in-depth simulation study with a decision tree to assess the effects of different data properties on whether foreign features are safe to discard.
+\item We conduct a comprehensive and in-depth simulation study with a decision tree to assess the effects of different data properties on how safe foreign features are to discard.
 
-\item We take a step towards formally analyzing the behavior of decision trees and RBF-SVMs in our setting and identify some open questions for theoretical research.
+\item We take a step towards formally analyzing the behavior of decision trees and RBF-SVMs in our setting and identify some open questions for ML theoretical research.
 
 \item We identify two practical bottlenecks with foreign key features and resolve them with simple but effective heuristics.
 \end{packeditems}
@@ -163,30 +171,51 @@ more practical. We conclude in Section 6.
 
 \subsection*{Related Work}
 
-\paragraph*{Database dependencies and ML}
+% We discuss the relationship of our work to key prior work from both the database, data mining, and ML literatures.
 
-Avoiding features using KFKFDs
+\paragraph*{Database Dependencies and ML}
+The scenario of learning over joins of multiple tables without materializing the output of the join was studied in~\cite{orion,olteanuf,rendle,santoku},
+but their goal was primarily to reduce runtimes of some ML techniques without affecting accuracy.
+In contrast, our work focuses on the more fundamental question of whether foreign features are even needed for accuracy in the first place for complex ML models
+such as decision trees and RBF-SVMs.
+We first demonstrated the feasibility of discarding foreign features for linear VC dimension models such as logistic regression and Naive Bayes in~\cite{hamlet}.
+In this work, we revisit that idea by demonstrating that popular infinite VC dimension models are counter-intuitively \textit{more} robust than linear models to avoiding 
+foreign features, not \textit{less} as our VC dimension-based analysis in~\cite{hamlet} suggested. Further, we also evaluate mechanisms to make foreign key features more practical.
+Embedded multi-valued dependencies (EMVDs) are database dependencies that are more general than functional dependencies~\cite{dbtheorybook}. 
+The implication of EMVDs for probabilistic conditional independence in Bayesian networks was originally described by~\cite{pearl} and further explored by~\cite{wong}.
+However, their use of EMVDs still requires computations over all features in the data instance. In contrast, our work demonstrates the dramatic effects of KFKDs and FDs 
+in enabling us to avoid entire sets of features for complex ML models \textit{without performing any computations} on the foreign features.
+There is a large body of work on statistical relational learning (SRL) to handle joins that cause duplicates in the fact table~\cite{srlbook}. But as mentioned before, 
+our work focuses on the regular IID setting for which SRL might be an overkill.
 
-FDs in feature selection
 
-MVDs and BayesNets
+\paragraph*{Feature Selection}
 
-SRL
+The data mining and ML communities have long studied the problem of feature selection to improve ML accuracy~\cite{guyonbook,hastie}.
+In contrast, our goal is \textit{not} to design new feature selection methods. Rather, we want to demonstrate that foreign features quite often do not help improve 
+accuracy when learning some popular complex ML classifiers. This can be viewed as a way of ``short-circuiting'' the feature selection process using database schema 
+information, with the aim of obviating large amounts of computations over foreign features.
+The trade-off between feature redundancy and relevancy is well-studied~\cite{guyonbook,leiyu,daphnekoller}. The conventional wisdom is that even a feature that is 
+redundant might be highly relevant and hence, unavoidable in the mix~\cite{guyonbook}. Our work establishes, perhaps surprisingly, that this is \textit{not} the case 
+for foreign features; even if a foreign feature is highly relevant, it can be safely discarded in most practical cases for decision trees and RBF-SVMs.
+There is prior work on exploiting FDs in feature selection.
+\cite{approxfds} infers approximate FDs using the dataset instance and exploits them during feature selection.
+FOCUS~\cite{focus} is an approach to bias the input and reduce the number of features by performing some computations over those features.
+Our work is orthogonal to all of these approaches that require computations over all features because we show that FDs caused by KFK joins imply that foreign features 
+can often be discarded when learning complex ML models \textit{without even looking at the features} and obviously, without performing any computations on them!
+To the best of our knowledge, no feature selection method exhibits such a dramatic capability that our work opens up.
+Unsupervised dimensionality reduction methods such as random hashing or PCA are also popular~\cite{hastie,mitchellbook}. Our lossy compression techniques to 
+reduce the domains of foreign key features for decision trees are inspired by such methods.
 
-\paragraph*{Feature selection}
-
-Redundancy-relevancy trade-off
-
-Handling large domain features
 
 
 \section{Preliminaries}
 We now explain our problem setting and notation, followed by an example. We then explain our assumptions and scope.
 
 \subsection{Notation}
-The setting we focus on is the following: the dataset has a set of tables in the so-called \textit{star schema}. 
-This database schemas is ubiquitous in diverse applications ranging from insurance to recommendation systems~\cite{cowbook}.
-The ``fact'' table is denoted \textbf{S} and it has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_k)$,
+The setting we focus on is the following: the dataset has a set of table in the so-called \textit{star schema} with KFK dependencies.
+Star schemas are ubiquitous in diverse applications ranging from insurance to recommendation systems~\cite{cowbook}.
+The central table with the target is called the ``fact'' table, \textbf{S}. It has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_k)$,
 while a ``dimension'' table is denoted $\textbf{R}_i$ ($i = 1$ to $k$) and it has the schema $\textbf{R}_i(\underline{RID_i},\textbf{X}_{R_i})$.
 In the schema, $Y$ is the learning target (class label), $\textbf{X}_S$ and $\textbf{X}_{R_i}$ are vectors (sequences) of features, $RID_i$ is the primary key
 of $\textbf{R}_i$, while $FK_i$ is a foreign key feature that refers to $\textbf{R}_i$. We call $\textbf{X}_S$ \textit{home} features and $\textbf{X}_{R_i}$ \textit{foreign} features.
@@ -194,9 +223,10 @@ For ease of exposition, we also treat \textbf{X} as a \textit{set} of features s
 Let \textbf{T} denote the output of the projected equi-join (key-foreign key, or KFK for short) query that constructs the full training dataset by 
 \textit{concatenating} the features from all base tables: $\textbf{T} \leftarrow \pi(\textbf{R} \bowtie_{RID=FK} \textbf{S})$. In general, its schema is 
 $\textbf{T}(\underline{SID},Y,\textbf{X}_S,FK_1,\dots,FK_k,\textbf{X}_{R_1},\dots,\textbf{X}_{R_k})$.
-In contrast to our setting, traditional ML formulations do not distinguish between home features, foreign keys, and foreign features.\footnote{Note that this setting is 
+In contrast to our setting, traditional ML formulations do not distinguish between home features, foreign keys, and foreign features.
+\eat{\footnote{Note that this setting is 
 different from the statistical relational learning (SRL) setting in which the joins could violate the IID assumption because they are not KFK (labeled examples in \textbf{S}
-might get duplicated. KFK joins do not cause such repetitions.}
+might get duplicated. KFK joins do not cause such repetitions.}}
 
 \eat{
 \paragraph*{Example}
@@ -210,21 +240,23 @@ because of a hunch that customers employed by rich corporations in coastal state
 }
 
 \subsection{Assumptions and Scope}
-For the sake of tractability, in this paper, we assume that all features are \textit{nominal} (categorical).\footnote{Numeric features can be discretized 
-using standard techniques, e.g., binning~\cite{mitchell}.} We also focus on binary classification but our ideas can be easily applied to multi-class targets as well.
-We assume that the foreign key features ($FK_i$) are not keys in the fact table, e.g., \texttt{ZipCode} does not uniquely identify a customer.
-Finally, we also do not study the ``cold start'' issue because it is orthogonal to the focus of this paper. 
-In other words, we assume that individual feature values not seen during training do not arise during testing. 
-In our example, this means that the classifier does not handle customers with previously unseen \texttt{Employer}, \texttt{ZipCode}, or even \texttt{Gender}. 
-We clarify that our goal is \textit{not} to create new classification or feature selection algorithms, nor is to study which algorithms yield lowest errors
-Our goal is to study the implications of key-foreign key dependencies (KFKDs) and functional dependencies (FDs) among features on the behavior of complex non-linear classifiers.
-For our purposes, we focus on decision trees (CART) and Gaussian-kernel SVMs as the representative non-linear classifiers.
+For the sake of tractability, in this paper, we assume that all features are \textit{categorical} (nominal).\footnote{Numeric features can be discretized 
+using standard techniques, e.g., binning~\cite{mitchellbook}.} We also focus on binary classification but our ideas can be easily applied to multi-class targets as well.
+We assume that the foreign key features ($FK_i$) are not (primary) keys in the fact table, e.g., \texttt{Employer} does not uniquely identify a customer.\footnote{Primary 
+keys in the fact table are \textit{not} generalizable features, unlike foreign keys.}
+Finally, we also do not study the ``cold start'' issue because it is orthogonal to the focus of this paper~\cite{coldstart}. In other words, we assume that all features 
+have known finite domains, possibly including a special ``Others'' placeholder to temporarily handle hitherto unseen values. In our example, this means that both 
+\texttt{Employer} and \texttt{Gender} have known finite domains. In general, $FK_i$ can take values only from the given set of $\textbf{R}_i.RID_i$ values 
+(new $FK_i$ values are mapped to ``Others''). Since ML models are rebuilt periodically in practice, new information can then be added to expand feature domains. 
+We emphasize that our goal is \textit{not} to create new classification or feature selection algorithms, nor is to compare which algorithms yield lowest errors.
+Our goal is to expose and analyze how KFKDs and FDs enable us to dramatically discard foreign features a priori when learning two popular infinite VC-dimension 
+classifiers: decision tree (CART) and RBF-SVM.
 
 
 
 \section{Empirical Study with Real Data}
 \paragraph*{Datasets}
-We take seven real normalized real-world datasets from ~\cite{arun}. The dataset statistics is provided in Table\ref{Table:datastats}.
+We take seven real normalized real-world datasets from ~\cite{hamlet}. The dataset statistics is provided in Table\ref{Table:datastats}.
 \begin{table}
 \centering
 \includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table1.pdf}
@@ -259,9 +291,32 @@ Where $x_{i}$ and $x_{j}$ are any two data points in the training dataset. A sma
 
 \section{In-depth Simulation Study}
 
-
+We now present a simulation study to dive into the behavior of the decision tree classifier as we vary the 
+properties of the underlying ``true'' data distribution. We focus on a simple two-table KFK join and sample datasets of 
+different dimensions (numbers of tuples and numbers of features).
+We use the decision tree classifier as the representative for this study because it exhibited the highest robustness to 
+discarding dimension tables on the real datasets. Our simulation study will ``stress test'' its robustness.
+But note that our simulation methodology is generic enough to be applicable to any other classifier because we only use 
+standard generic notions of of error and variance.
 
 \paragraph*{Setup and Data Synthesis}
+There is one attribute table \textbf{R} ($k=1$), and all of $\textbf{X}_S$, $\textbf{X}_R$, and $Y$ are boolean (domain size $2$).
+We control the ``true'' distribution $P(Y,\textbf{X})$ and sample labeled examples in an IID manner from it.
+We study two different scenarios for what features \textbf{X} are used in $P$: \texttt{OneXr} and \texttt{XSXR}.
+These scenarios represent opposite extremes for how likely the (test) error is likely to shoot up when $\textbf{X}_R$ is discarded
+and $FK$ is used as a representative~\cite{hamlet}. In the \texttt{OneXr} scenario, a lone feature $X_r \in \textbf{X}_R$ is 
+what is the only feature used in $P$; the rest of $\textbf{X}_R$ and $\textbf{X}_S$ are random noise (but note that $FK$ will not 
+be noise because it functionally determines $X_r$). In the \texttt{XSXR} scenario, all features in $\textbf{X}_S$ and $\textbf{X}_R$
+are used in $P$. Intuitively, \texttt{OneXr} is the worst-case scenario for discarding $\textbf{X}_R$ because $X_r$ is typically 
+far more succinct than $FK$, which we expect to translate to less possibility of overfitting with NoJoin. Note that if we use $FK$ 
+directly in $P$, $\textbf{X}_R$ can be more easily discarded because $FK$ conveys more information anyway; so, we skip this scenario.
+
+The following data parameters are varied one at a time: number of training examples ($n_S$), size of foreign key domain ($|\mathcal{D}_{FK}|$ $=n_R$),
+number of features in $\textbf{X}_R$ ($d_R$), and number of features in $\textbf{X}_S$ ($d_S$). We also sample $\frac{n_S}{4}$ examples each for the 
+validation set (for hyper-parameter tuning) and the holdout test set (final indicator of error).
+We generate $100$ different training datasets and measure the average test error and average net variance (as defined in~\cite{pedrobvd}) 
+based on the different models obtained from these $100$ runs.
+
 
 \begin{figure*}
 \centering
@@ -271,7 +326,9 @@ Where $x_{i}$ and $x_{j}$ are any two data points in the training dataset. A sma
 \caption{OneXr simulation}
 \label{Figure:OneXrSimulation}
 \end{figure*}
+
 \subsection{Scenario OneXr}
+<<<<<<< HEAD
 
 \begin{figure}
 \centering
@@ -289,6 +346,32 @@ Where $x_{i}$ and $x_{j}$ are any two data points in the training dataset. A sma
 \label{Figure:OneXrjerry}
 \end{figure}
 
+=======
+The ``true'' distribution is set as follows: $P(Y=0|X_r=0)=P(Y=1|X_r=1)=p$, where $p$ is called the probability skew parameter that controls the Bayes error (noise).
+The exact procedure for sampling examples is as follows: (1) Construct tuples of \textbf{R} by sampling $\textbf{X}_R$ values randomly (each feature value 
+is an independent coin toss). (2) Construct the tuples of \textbf{S} by sampling $\textbf{X}_S$ values randomly (independent coin tosses). (3) Assign $FK$ 
+values to \textbf{S} tuples uniformly randomly from $\mathcal{D}_{FK}$. (4) Assign $Y$ values to \textbf{S} tuples by looking up into their respective $X_r$ 
+value (implicit join on $FK = RID$) and sampling from the above true distribution.
+
+We compare three settings based on what features are used by the model: 
+\textit{UseAll}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK, \textbf{X}_R]$, \textit{NoJoin}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK]$ 
+(i.e., discard $\textbf{X}_R$), and \textit{NoFK}, which uses $\textbf{X} \equiv [\textbf{X}_S, \textbf{X}_R]$ (i.e., discard $FK$).
+Note that our hypothesis is that \textit{UseAll} and \textit{NoJoin} will exhibit similar errors in most cases, i.e., the foreign features 
+($\textbf{X}_R$) might not really help improve accuracy. We include \textit{NoFK} to provide a reasonable lower bound on errors, since we know $FK$ 
+is not directly a part of the true distribution.\footnote{In general, \textit{NoFK} could have much higher errors if $FK$ is part of the true distribution.}
+Figure~\ref{Figure:OneXrSimulation} presents the results for the (holdout) test errors for varying each relevant data and distribution parameter, one at a time.
+
+We see that regardless of the parameter being varied, in almost all cases, \textit{NoJoin} and \textit{JoinAll} have virtually identical errors (close to the Bayes 
+error)! From inspecting the actual decision trees learned in these two settings, we found that in almost all cases, $FK$ was used heavily for partitioning and seldom was 
+a feature from $\textbf{X}_R$, including $X_r$, used. This suggests that $FK$ can indeed act as a good representative of $\textbf{X}_R$ even in this extreme sccenario. 
+In contrast to these results,~\cite{hamlet} reported that for linear models, the errors of \textit{NoJoin} shot up compared to \textit{JoinAll} (a gap of nearly $0.05$)
+as the tuple ratio ($n_S : |\mathcal{D}_{FK}|$) starts falling below $20$. In stark contrast, as Figure~\ref{Figure:OneXrSimulation}(A2) shows, even for a tuple ratio of 
+just $3$, \textit{NoJoin} and \textit{JoinAll} have similar errors with the decision tree. When $n_S$ becomes very low or when $|\mathcal{D}_{FK}$ becomes very high,
+the absolute errors of \textit{JoinAll} and \textit{NoJoin} increase compared to \textit{NoFK}. This suggests that even though \textit{NoJoin} is comparable to 
+\textit{JoinAll}, in regimes with very low tuple ratios, \textit{NoFK} is also worth trying. This is similar to the behavior seen on the Yelp dataset, since the tuple 
+ratio for the user table was $< 3$. In almost all the other real datasets, we did not need to drop the foreign key features and \textit{NoJoin} sufficed.
+Overall, we see that \textit{NoJoin} exhibits similar behavior as the state-of-the-art \textit{JoinAll} approach.
+>>>>>>> origin/master
 
 \begin{figure*}
 \centering
@@ -297,17 +380,52 @@ Where $x_{i}$ and $x_{j}$ are any two data points in the training dataset. A sma
 \label{Figure:OneXrZipfSimulation}
 \end{figure*}
 
+<<<<<<< HEAD
 
 \paragraph*{Scenario SkewedFK}
+=======
+\paragraph*{Scenario OneXrSkewedFK}
+The regular OneXr scenario samples $FK$ values in \textbf{S} uniformly randomly from $\mathcal{D}_{FK}$ (step 3 in the procedure). We now ask if a \textit{skew} in 
+the distribution of $FK$ values could widen the gap between \textit{JoinAll} and \textit{NoJoin}. To study this scenario, we modify the data generation procedure slightly:
+in step 3, we sample $FK$ values with a Zipfian skew or a needle-and-thread skew. The Zipfian skew simply uses a Zipfian distribution for $P(FK)$ controlled by the Zipfian
+skew parameter. The needle-and-thread skew allocates a large probability mass (parameter $p$) to a single $FK$ value (the ``needle'') and uniformly distributes the rest of 
+the probability mass to all other $FK$ values (the ``thread''). For the linear model case,~\cite{hamlet} reported that as the skew parameters increased, the gap widened.
+Figure~\ref{Figure:OneXrZipfSimulation} presents the results for the decision tree.
+
+Surprisingly, the gap between \textit{NoJoin} and \textit{JoinAll} does not widen significantly regardless of the amount of skew introduced in either the Zipfian case or
+the needle-and-thread case! This result further affirms the remarkable robustness of the decision tree in enabling us to discard foreign features. As expected, 
+\textit{NoFK} is better in the regime of very few training examples, while overall, \textit{NoJoin} is quite similar to \textit{JoinAll}.
+>>>>>>> origin/master
 
 
-\subsection{Scenario XSXR}
 \begin{figure*}
 \centering
 \includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{xsxr.png}
 \caption{XsXr simulation}
 \label{Figure:XsXrSimulation}
 \end{figure*}
+
+\subsection{Scenario XSXR}
+Unlike the \textit{OneXr} scenario, we now create a true distribution that maps $\textbf{X} \equiv [\textbf{X}_S, \textbf{X}_R]$ to $Y$ without any Bayes error (noise).
+The exact procedure for sampling examples is as follows: (1) Construct a true probability table (TPT) with entries for all possible values of 
+$[\textbf{X}_S, \textbf{X}_R]$ and assign a random probability to each entry such that the total probability is $1$.
+(2) For each entry in the TPT, pick a $Y$ value randomly and append the TPT entry; this ensures $H(Y|\textbf{X}) = 0$.
+(3) Marginalize the TPT to obtain $P(\textbf{X}_R)$ and from it, sample $n_R = \mathcal{D}_{FK}$ tuples for \textbf{R} along with an associated sequential $RID$ value.
+(4) In the original TPT, push the probability of each entry to $0$ if its $\textbf{X}_R$ values did not get picked for \textbf{R} in step 3.
+(5) Renormalize the TPT so that the total probability is $1$ and sample $n_S$ examples ($Y$ values do not change) and construct \textbf{S}.
+(6) For each tuple in \textbf{S}, pick its $FK$ value uniformly randomly from the subset of $RID$ values that map to its $\textbf{X}_R$ value in \textbf{R} (an implicit join).
+
+We compare three settings: \textit{JoinAll}, \textit{NoJoin}, and \textit{NoFK}, with \textit{NoFK} meant to be a lower bound on the errors possible (because 
+it uses the knowledge that $FK$ is not directly a part of the true distribution). Once again, our hypothesis is that \textit{JoinAll} and \textit{NoJoin} will exhibit similar 
+errors in most cases, while \textit{NoFK} will perform better when the tuple ratio is low. Figure~\ref{Figure:XsXrSimulation} presents the results.
+
+Once again, we see that \textit{NoJoin} and \textit{JoinAll} exhibit similar errors in almost all cases, with the largest gap being $0.017$ in Figure~\ref{Figure:XsXrSimulation}(C)).
+Interestingly, even when the tuple ratio is close to $1$, the gap between \textit{NoJoin} and \textit{JoinAll} does not widen much. 
+Figure~\ref{Figure:XsXrSimulation}(B)) shows that as $|\mathcal{D}_{FK}|$ increases, \textit{NoFK} remains at low overall errors, unlike both \textit{JoinAll} and \textit{NoJoin}.
+But as we increase $d_R$ or $d_S$, the gap between \textit{JoinAll}/\textit{NoJoin} and \textit{NoFK} narrows because even \textit{NoFK} does not have enough training examples.
+Of course, all gaps virtually disappear as the number of training examples increases, as shown by Figure~\ref{Figure:XsXrSimulation}(A).
+Overall, we see that \textit{NoJoin} exhibits similar behavior as the state-of-the-art \textit{JoinAll} approach even in this scenario.
+
 
 \subsection{Explanation and Open Questions}
 
