@@ -37,11 +37,13 @@
 \setcopyright{acmcopyright}
 % \setcopyright{rightsretained}
 
+\eat{
 \acmDOI{10.475/123_4}
 \acmISBN{123-4567-24-567/08/06}
-\acmConference[WOODSTOCK'97]{ACM Woodstock conference}{July 1997}{El Paso, Texas USA} 
-\acmYear{1997}
-\copyrightyear{2016}
+}
+\acmConference[KDD'17]{KDD Conference}{August 2017}{Halifax, Canada} 
+\acmYear{2017}
+\copyrightyear{2017}
 \acmPrice{15.00}
 
 \begin{document}
@@ -146,13 +148,13 @@ In very few of these cases does discarding foreign features cause the error to r
 overfitting significantly is when the number of training examples is less than $3$x the number of foreign key values. This scenario arose in only one of the seven real datasets.
 These results are in stark constrast to the results for linear models.
 
-Our counter-intuitive empirical and simulation results raise open questions for ML theoretical research about why decision trees and RBF-SVMs are so robust to discarding 
+Our counter-intuitive results raise open questions for ML theoretical research about why decision trees and RBF-SVMs are so robust to discarding 
 foreign features even though they have infinite VC dimensions. As a step in this direction, we provide some intuitive explanations that shed some light into their behavior. 
 Essentially, we explain why RBF-SVMs with foreign key features behave somewhat like a 1-nearest neighbor classifier due to the high dimensionality of foreign key features with 
 one-hot encoding. While this leads to a form of \textit{memorization} of the foreign key's domain, this seems to have little effect on the model's generalization or test errors.
-This is similar to how memorization seems to occur in deep neural networks~\cite{rechtdnn}, but a key difference in our setting is that such memorization does not necessarily 
-apply to all features. We also discuss why decision trees are robust to operating with foreign key features. 
-Still, more open questions remain; we hope our results contribute to more discussions and research on this topic.
+This is similar to how memorization seems to occur in deep neural networks~\cite{rechtdnn}, but a key difference in our setting is that such memorization does not apply to
+\textit{all} features. We also discuss why decision trees are robust to operating with foreign key features. 
+Still, many open questions remain and we hope our results contribute to more discussions and research on this topic.
 
 \eat{
 We extend the worst-case simulation scenario for linear models by replicating the foreign feature that determines the target multiple times. The idea is to make a model that uses 
@@ -182,8 +184,8 @@ We present an empirical study with several real-world datasets that shows that d
 \end{packeditems}
 
 
-\paragraph*{\textbf{Outline}} In the rest of this section, we discuss related prior work and position our work in context. Section 2 presents our notation, problem scope, and assumptions. 
-Section 3 presents results on the real datasets, while Section 4 presents our in-depth simulation study and analysis. Section 5 presents our techniques to make foreign key features
+\paragraph*{\textbf{Outline}} In the rest of this section, we discuss related prior work and position our work. Section 2 presents our notation, scope, and assumptions. 
+Section 3 presents results on the real data. Section 4 presents our in-depth simulation study and analysis. Section 5 presents our techniques to make foreign key features
 more practical. %We conclude in Section 6.
 
 \subsection*{Related Work}
@@ -205,6 +207,7 @@ in enabling us to avoid entire sets of features for complex ML models \textit{wi
 There is a large body of work on statistical relational learning (SRL) to handle joins that cause duplicates in the fact table~\cite{srlbook}. But as mentioned before, 
 our work focuses on the regular IID setting for which SRL might be an overkill.
 
+\vspace{-1mm}
 \paragraph*{\textbf{Feature Selection}}
 The data mining and ML communities have long studied the problem of feature selection to improve ML accuracy~\cite{guyonbook,hastie}.
 In contrast, our goal is \textit{not} to design new feature selection methods. Rather, we want to demonstrate that foreign features quite often do not help improve 
@@ -219,15 +222,18 @@ FOCUS~\cite{focus} is an approach to bias the input and reduce the number of fea
 Our work is orthogonal to all of these approaches that require computations over all features because we show that FDs caused by KFK joins imply that foreign features 
 can often be discarded when learning complex ML models \textit{without even looking at the features} and obviously, without performing any computations on them!
 To the best of our knowledge, no feature selection method exhibits such a dramatic capability that our work opens up.
+Scores such as Gini and information gain are known to be biased towards large-domain features in decision tree learning~\cite{dtreebias1} and different approaches 
+have explored alternatives to solve that issue~\cite{dtreebias2}. Our problem is orthogonal because we focus on how FDs enable us to ignore foreign features a priori 
+without affecting accuracy significantly. Furthermore, even with the gain ratio score that mitigates the bias towards large-domain features, our main findings stand.
 Unsupervised dimensionality reduction methods such as random hashing or PCA are also popular~\cite{hastie,mitchellbook}. Our lossy compression techniques to 
 reduce the domains of foreign key features for decision trees are inspired by such methods.
 
 
 
 \section{Preliminaries}
-We now explain our problem setting and notation, followed by an example. We then explain our assumptions and scope.
+% We now explain our problem setting and notation, followed by an example. We then explain our assumptions and scope.
 
-\subsection{Notation}
+\paragraph*{\textbf{Notation}}
 The setting we focus on is the following: the dataset has a set of table in the so-called \textit{star schema} with KFK dependencies.
 Star schemas are ubiquitous in diverse applications ranging from insurance to recommendation systems~\cite{cowbook}.
 The central table with the target is called the ``fact'' table, \textbf{S}. It has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_q)$,
@@ -254,7 +260,8 @@ In such scenarios, data scientists typically join all base tables to bring in th
 because of a hunch that customers employed by rich corporations in coastal states and living in ``safe'' areas are unlikely to churn.
 }
 
-\subsection{Assumptions and Scope}
+\vspace{-1mm}
+\paragraph*{\textbf{Assumptions and Scope}}
 For the sake of tractability, in this paper, we assume that all features are \textit{categorical} (nominal).\footnote{Numeric features can be discretized 
 using standard techniques, e.g., binning~\cite{mitchellbook}.} We also focus on binary classification but our ideas can be easily applied to multi-class targets as well.
 We assume that the foreign key features ($FK_i$) are not (primary) keys in the fact table, e.g., \texttt{Employer} does not uniquely identify a customer.\footnote{Primary 
@@ -277,13 +284,14 @@ Tuple Ratio is the ratio of the number of training examples to the number of $FK
 N/A means the corresponding dimension table can never be discarded because its corresponding foreign key has an ``open'' domain. 
 \red{TODO: TRs need to be halved. Use N/A for Expedia R2.}}
 \label{Table:datastats}
+\vspace{-4mm}
 \end{table}
 
 \section{Empirical Study with Real Data}
 
 \paragraph*{\textbf{Datasets}}
-We take the seven real datasets from~\cite{hamlet}, which were originally sourced from Kaggle, GroupLens, \url{openflights.org}, \url{mtg.upf.edu/node/1671}, and \url{last.fm}.
-Two of these have binary target (Flights and Expedia), while the other five have multi-class ordinal targets. For the sake of simplicity, we binarize all targets 
+We take the seven real datasets from~\cite{hamlet}; these are originally from Kaggle, GroupLens, \url{openflights.org}, \url{mtg.upf.edu/node/1671}, and \url{last.fm}.
+Two datasets have binary targets (Flights and Expedia); the others have multi-class ordinal targets. For the sake of simplicity, we binarize all targets 
 for this paper (this change does not affect our overall conclusions). The dataset statistics are provided in Table~\ref{Table:datastats}. 
 We briefly describe the task for each dataset and explain what the foreign features are. More details about their schemas, including the list 
 of all features are already in the public domain (listed in~\cite{hamlet}). 
@@ -295,6 +303,7 @@ of all features are already in the public domain (listed in~\cite{hamlet}).
 \includegraphics[width=0.99\linewidth]{table2.pdf}
 \caption{Holdout test accuracy on the real-world datasets.}
 \label{Table:RealTest}
+\vspace{-2mm}
 \end{table*}
 
 \textit{Walmart}: predict if department-wise sales will be high using past sales (fact table) joined with stores and weather/economic indicators (two dimension tables).
@@ -306,12 +315,12 @@ of all features are already in the public domain (listed in~\cite{hamlet}).
 \textit{LastFM}: predict if a song will be played often using past play level information (fact table) joined with users and artists (two dimension tables).
 \textit{Books}: if a book will be rated highly using past ratings (fact table) joined with readers and books (two dimension tables).
 
-
+\vspace{-1mm}
 \paragraph*{\textbf{Methodology}}
 Each dataset comes pre-split 50\%:25\%:25\% for training-validation-test. We retain the splits as is.
 We compare two approaches: \textit{JoinAll}, which joins all base tables to provide all features to the classifier (the current widespread practice), and \textit{NoJoin},
 which avoids all foreign features a priori (the approach we study). We compare them for both a decision tree (CART) and an SVM with RBF kernel. For the decision trees, we 
-try three popular split criteria: Gini, information gain, and gain ratio~\cite{criteria}. We use the popular R packages ``rpart'' for the decision tree\footnote{For the gain 
+try three popular split criteria: Gini, information gain, and gain ratio. We use the popular R packages ``rpart'' for the decision tree\footnote{For the gain 
 ratio, we used \red{TODO}.} and ``e1071'' for the SVM. We use the validation set to perform hyper-parameter tuning using a standard grid search as follows:
 
 \textit{Decision Tree}: There are two hyper-parameters to tune: \textit{minsplit} and \textit{cp}. \textit{minsplit} is the number of observations that 
@@ -332,9 +341,10 @@ Table~\ref{Table:RealTest} presents the results.
 \includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table5.pdf}
 \caption{Robustness study for discarding dimension tables on the real datasets with a Gini decision tree.}
 \label{Table:robustness}
+\vspace{-4mm}
 \end{table}
 
-
+\vspace{-1mm}
 \paragraph*{\textbf{Results}}
 Our first and most important observation is that for almost all the datasets (\textit{Yelp} being the exception) and for all three split criteria, the accuracy of the decision tree 
 is quite comparable between \textit{JoinAll} and \textit{NoJoin}. The trend is quite similar for the RBF-SVM as well.
@@ -359,7 +369,7 @@ $7$ of the dimension tables could be discarded without affecting accuracy signif
 needs six times fewer training examples and the RBF-SVM needs three times fewer training examples than linear models to avoid extra overfitting when discarding foreign features}! 
 This is counter-intuitive because conventional wisdom is that more complex ML models need more (not less) training examples to avoid extra overfitting.
 
-For an interesting comparison that we will use later on, we also present the results for a classical ``braindead'' classifier: 1-nearest neighbor~\cite{mitchell}. 
+For an interesting comparison that we will use later on, we also present the results for a classical ``braindead'' classifier: 1-nearest neighbor~\cite{mitchellbook}. 
 1-NN performs sheer \textit{memorization}. But surprisingly, as Table~\ref{Table:RealTest} shows,  its accuracy is sometimes comparable to decision trees and RBF-SVMs! 
 More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a higher accuracy than with \textit{JoinAll}. We discuss this behavior further in Section 4.3.
 
@@ -367,6 +377,7 @@ More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a highe
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_row1.pdf}
 \includegraphics[width=0.99\linewidth]{onexr_row2.pdf}
+\vspace{-2mm}
 \caption{Simulation results for Scenario OneXr. For all plots except (E), we fix $p = 0.1$. Note that $n_R \equiv |\mathcal{D}_{FK}|$.
 (A) Vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$.
 (B) Vary $n_R$, while fixing $(n_S, d_S, d_R) = (1000, 4, 4)$.
@@ -381,15 +392,15 @@ More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a highe
 
 \section{In-depth Simulation Study}
 
-We now present a simulation study to dive into the behavior of the decision tree classifier as we vary the 
-properties of the underlying ``true'' data distribution. We focus on a simple two-table KFK join and sample datasets of 
-different dimensions (numbers of tuples and numbers of features).
-We use the decision tree classifier as the representative for this study because it exhibited the highest robustness to 
-discarding dimension tables on the real datasets. Our simulation study will ``stress test'' its robustness.
+We dive deeper into the behavior of the decision tree classifier using a simulation study in which we vary the properties of the 
+underlying ``true'' data distribution. We focus on a two-table KFK join for simplicity. We sample datasets of different dimensions.
+We use the decision tree for this study because it exhibited the maximum robustness to discarding dimension tables on the real data. 
+Our simulation study will now ``stress test'' its robustness.
 But note that our simulation methodology is generic enough to be applicable to any other classifier because we only use 
 standard generic notions of of error and variance.
 
-\paragraph*{Setup and Data Synthesis}
+\vspace{-1mm}
+\paragraph*{\textbf{Setup and Data Synthesis}}
 There is one attribute table \textbf{R} ($k=1$), and all of $\textbf{X}_S$, $\textbf{X}_R$, and $Y$ are boolean (domain size $2$).
 We control the ``true'' distribution $P(Y,\textbf{X})$ and sample labeled examples in an IID manner from it.
 We study two different scenarios for what features \textbf{X} are used in $P$: \texttt{OneXr} and \texttt{XSXR}.
@@ -407,7 +418,7 @@ validation set (for hyper-parameter tuning) and the holdout test set (final indi
 We generate $100$ different training datasets and measure the average test error and average net variance (as defined in~\cite{pedrobvd}) 
 based on the different models obtained from these $100$ runs.
 
-
+\vspace{-1mm}
 \subsection{Scenario OneXr}
 
 The ``true'' distribution is set as follows: $P(Y=0|X_r=0)=P(Y=1|X_r=1)=p$, where $p$ is called the probability skew parameter that controls the Bayes error (noise).
@@ -416,13 +427,13 @@ is an independent coin toss). (2) Construct the tuples of \textbf{S} by sampling
 values to \textbf{S} tuples uniformly randomly from $\mathcal{D}_{FK}$. (4) Assign $Y$ values to \textbf{S} tuples by looking up into their respective $X_r$ 
 value (implicit join on $FK = RID$) and sampling from the above true distribution.
 
-We compare the same three approaches from before: \textit{JoinAll}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK, \textbf{X}_R]$, 
+We compare the same three approaches: \textit{JoinAll}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK, \textbf{X}_R]$, 
 \textit{NoJoin}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK]$ (i.e., discard $\textbf{X}_R$), and \textit{NoFK}, 
 which uses $\textbf{X} \equiv [\textbf{X}_S, \textbf{X}_R]$ (i.e., discard $FK$).
 Our hypothesis is that \textit{JoinAll} and \textit{NoJoin} will exhibit similar errors in most cases. 
-We include \textit{NoFK} to provide a reasonable lower bound on errors, since we know $FK$ is not directly a part of the true 
-distribution.\footnote{In general though, \textit{NoFK} could have much higher errors if $FK$ is part of the true distribution; this behavior was seen in most of 
-the real datasets in Table~\ref{Table:RealTest}.}
+We include \textit{NoFK} for a lower bound on errors, since we know $FK$ is not directly a part of the true 
+distribution.\footnote{In general though, \textit{NoFK} could have much higher errors if $FK$ is part of the true distribution; indeed, \textit{NoFK} had 
+much higher errors on many real datasets (Table~\ref{Table:RealTest}).}
 Figure~\ref{Figure:OneXrSimulation} presents the results for the (holdout) test errors for varying each relevant data and distribution parameter, one at a time.
 
 We see that regardless of the parameter being varied, in almost all cases, \textit{NoJoin} and \textit{JoinAll} have virtually identical errors (close to the Bayes 
@@ -444,23 +455,28 @@ The 1-NN, as expected, is far less stable and the deviation starts even at a tup
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{onexr_svm_1nn.pdf}
+\includegraphics[width=0.99\linewidth]{onexr_svm_1nn.pdf}
+\vspace{-2mm}
 \caption{Scenario OneXr simulations with the same setup as Figure~\ref{Figure:OneXrSimulation}(B), except for (A) 1-NN and (B) RBF-SVM.}
 \label{Figure:OneXr1nnSVMSimulation}
+\vspace{-4mm}
 \end{figure}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{onexr_zipf.png}
+\includegraphics[width=0.99\linewidth]{onexr_zipf.png}
+\vspace{-2mm}
 \caption{Scenario OneXr simulations with skew in $P(FK)$. (A-B) Zipfian skew. (C-D) Needle-and-thread skew. For (A) and (C), we vary the respective skew parameter
 (Zipfian skew parameter and needle probability), while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$. For (B) and (D), we vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$,
 the Zipfian skew parameter to $2$ for (B), and the needle probability to $0.5$ for (D).
 \red{TODO: Make this a pdf, not png}
 }
+\vspace{-2mm}
 \label{Figure:OneXrZipfSimulation}
 \end{figure*}
 
-\paragraph*{Foreign Key Skew}
+\vspace{-1mm}
+\paragraph*{\textbf{Foreign Key Skew}}
 The regular OneXr scenario samples $FK$ values in \textbf{S} uniformly randomly from $\mathcal{D}_{FK}$ (step 3 in the procedure). We now ask if a \textit{skew} in 
 the distribution of $FK$ values could widen the gap between \textit{JoinAll} and \textit{NoJoin}. To study this scenario, we modify the data generation procedure slightly:
 in step 3, we sample $FK$ values with a Zipfian skew or a needle-and-thread skew. The Zipfian skew simply uses a Zipfian distribution for $P(FK)$ controlled by the Zipfian
@@ -476,9 +492,11 @@ the needle-and-thread case! This result further affirms the remarkable robustnes
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{xsxr.png}
+\vspace{-2mm}
 \caption{Simulation results for Scenario XSXR. The parameter values varied/fixed ($n_S$, $n_R$, $d_S$, and $d_R$) are the same as in Figure~\ref{Figure:OneXrSimulation} (A)-(D). 
 \red{TODO: Make this a pdf, not png}
 }
+\vspace{-2mm}
 \label{Figure:XsXrSimulation}
 \end{figure*}
 
@@ -509,6 +527,7 @@ Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \t
 \includegraphics[width=2\columnwidth]{table3.pdf}
 \caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest}.}
 \label{Table:RealTrain}
+\vspace{-2mm}
 \end{table*}
 
 \subsection{Explanation and Open Questions}
@@ -518,7 +537,7 @@ We now provide an intuitive explanation for the surprising behavior of the compl
 We first ask: {Does \textit{NoJoin} compromise the ``generalization error''?} The generalization error is the difference of the test and train errors.
 Table~\ref{Table:RealTest} already listed the test accuracy. Table~\ref{Table:RealTrain} now presents the train accuracy. Clearly, \textit{JoinAll} vs 
 \textit{NoJoin} are almost indistinguishable for the decision tree. Note that the absolute generalization error is quite high in some cases, 
-as can be expected for decision trees~\cite{mitchell}. For example, on \textit{Flights}, the train accuracy is nearly $100\%$, while the test accuracy is only about $85\%$.
+as can be expected for decision trees~\cite{dtreebias2}. For example, on \textit{Flights}, the train accuracy is nearly $100\%$, while the test accuracy is only about $85\%$.
 But that issue is orthogonal to our focus; note that \textit{NoJoin} did not increase this difference significantly. \textit{In other words, discarding foreign 
 features did not affect the generalization error of the decision tree!} The generalization errors of the RBF-SVM also exhibit a similar trend. \red{\textbf{TODO:}}
 
@@ -577,27 +596,26 @@ formal mechanisms to characterize when discarding foreign features is feasible b
 \section{Making Foreign Key Features Practical}
 
 We now discuss two key practical issues caused by the large domains of foreign key features and explore how standard approaches can be used to resolve them. 
-In contrast to prior work on handling regular large-domain features~\cite{dtreedomain}, foreign key features are distinct in that they have coarser-grained 
+In contrast to prior work on handling regular large-domain features~\cite{dtreebias1}, foreign key features are distinct in that they have coarser-grained 
 side information available in the foreign features, which can be exploited, if possible.
 
 
 \subsection{Foreign Key Domain Compression}
 
-Clearly, foreign keys often act as good representatives of foreign features for \textit{accuracy}.
-But they often pose a practical bottleneck for \textit{interpretability} due to the sheer size of their domains.
-For example, it is nearly impossible to visualize a decision tree that uses a foreign key feature with 1000s of domain values.
-In order to make a foreign key feature more practical, we consider a simple approach that is standard in the ML literature:
-\textit{lossy compression} of its domain to a (much) smaller user-defined domain size. Essentially, given a 
+While foreign keys often act as good representatives of foreign features for \textit{accuracy},
+they pose a practical bottleneck for \textit{interpretability} due to their domain sizes.
+For example, it is hard to visualize a decision tree that uses a foreign key feature with 1000s of values.
+In order to make foreign key features more practical, we consider a simple approach that is standard in the ML literature:
+\textit{lossy domain compression} to a (much) smaller user-defined domain size. Essentially, given a 
 foreign key feature $FK$ with domain $\mathcal{D}_{FK}$ recoded as $[m]$ (where $m = |\mathcal{D}_{FK}|$) and a user-specified 
 positive integer ``budget'' $l \ll m$, we want a mapping $f: [m] \rightarrow [l]$.
 
-A standard unsupervised method to construct 
-$f$ is the \textit{random hashing} trick~\cite{hashingtrick}, i.e., randomly hash $FK$ values to $[l]$ and use the new compressed 
-domian for learning and inference. We also try a simple supervised method we call the \textit{sort-based} method to help preserve more of the information contained 
-in $FK$ about $Y$. Sort-based is a greedy approach in which we sort $\mathcal{D}_{FK}$ based on $H(Y|FK=z), ~z \in \mathcal{D}_{FK}$, compute the differences among adjacent pairs 
-of values, and pick the boundaries corresponding to the top $l-1$ differences (ties broken randomly). This gives us an $l$-partition 
-of $\mathcal{D}_{FK}$. The intuition is that by grouping $FK$ values that have comparable conditional entropy values, $H(Y|f(FK))$ 
-is unlikely to increase much compared to $H(Y|FK)$. Note the lower $H(Y|FK)$ is, the more informative $FK$ is to predict $Y$. 
+A standard unsupervised method to construct $f$ is the \textit{random hashing} trick~\cite{hashingtrick}, i.e., randomly hash from $[m]$ to $[l]$.
+We also try a simple supervised method we call the \textit{sort-based} method to preserve more of the information contained 
+in $FK$ about $Y$. Sort-based is a greedy approach: sort $\mathcal{D}_{FK}$ based on $H(Y|FK=z), ~z \in \mathcal{D}_{FK}$, compute the 
+differences among adjacent pairs of values, and pick the boundaries corresponding to the top $l-1$ differences (ties broken randomly). 
+This gives us an $l$-partition of $\mathcal{D}_{FK}$. The intuition is that by grouping $FK$ values that have comparable conditional entropy, 
+$H(Y|f(FK))$ is unlikely to be much higher than $H(Y|FK)$. Note that the lower $H(Y|FK)$ is, the more informative $FK$ is to predict $Y$. 
 We leave more sophisticated approaches to future work.
 
 We now empirically compare the above two heuristics using three of the real datasets. Our methodology is as follows. We retain the 50:25:25 
@@ -650,22 +668,24 @@ $FK$ for the whole dataset, and then measure the holdout test error.
 
 \begin{figure}
 \centering
-\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{smoothing.pdf}
-\caption{Smoothing where (A) denotes random based and (B) represents the xr based smoothing}
+\includegraphics[width=0.99\linewidth]{smoothing.pdf}
+\vspace{-4mm}
+\caption{Smoothing. (A) Random hashing. (B) $\textbf{X}_R$-based.}
 \label{Figure:smoothing}
+\vspace{-2mm}
 \end{figure}
 
 \subsection{Foreign Key Smoothing}
 
-A closely related issue caused by a large $|\mathcal{D}_{FK}|$ is that some $FK$ values might not be present in the training set but arise 
-in the test set or during deployment. Note that this issue is different from the cold start issue because $\mathcal{D}_{FK}$ is still closed 
-in this setting. This issue arises because there are simply not enough labeled examples to cover 
-all of $\mathcal{D}_{FK}$ during training. Typically, this issue is handled using some form of \textit{smoothing}, e.g., Laplacian smoothing
+Another issue caused by large $|\mathcal{D}_{FK}|$ is that some $FK$ values might not arise in the train set but arise 
+in the test set or during deployment. This is not a cold start issue -- the $FK$ values are all still from the fully known $\mathcal{D}_{FK}$. 
+This issue arises because there are not enough labeled examples to cover all of $\mathcal{D}_{FK}$ during training. 
+Typically, this issue is handled using some form of \textit{smoothing}, e.g., Laplacian smoothing
 for Naive Bayes by adding a pseudocount of $1$ to all frequency counts~\cite{mitchellbook}.
 While similar smoothing techniques have been studied for probability estimation using decision trees~\cite{pedro2003}, to the best of our knowledge, 
 this issue has not been handled in general for classification using decision trees. In fact, popular decision tree implementations in R simply 
 crash if a value of $FK$ not seen during training arises during testing! Note that SVMs (or any other classifier operating on numeric 
-feature spaces) do not face this issue due to the one-hot recoding of $FK$. 
+feature spaces) do not face this issue due to the one-hot encoding of $FK$. 
 
 We consider a simple approach to mitigate this issue: smooth by \textit{reassigning} an $FK$ value not seen during training to an $FK$ value that was
 seen. There are various ways to reassign; for simplicity sake, we only study two lightweight unsupervised methods.
@@ -677,9 +697,9 @@ Our algorithm is simple: given a test example with $FK$ not seen during training
 $\textbf{X}_R$ feature vector has the minimum $l_0$ distance with the test example's $\textbf{X}_R$ (ties broken randomly). The $l_0$ distance is
 simply the count of the number of pairwise mismatches of the respective features in the two $\textbf{X}_R$ feature vectors. 
 
-The intuition for $\textbf{X}_R$-based smoothing is that if $\textbf{X}_R$ is part of the ``true'' distribution, it can provide better accuracy 
-than random reassignment. But if $\textbf{X}_R$ is simply noise, it becomes similar to random reassignment.
-To demonstrate our point, we now empirically compare their accuracy using our OneXr simulation scenario. Recall that a feature $X_r \in \textbf{X}_R$
+The intuition for $\textbf{X}_R$-based smoothing is that if $\textbf{X}_R$ is part of the ``true'' distribution, it may yield higher accuracy 
+than random reassignment. But if $\textbf{X}_R$ is just noise, this becomes essentially random reassignment.
+To validate our claim, we use the OneXr simulation scenario. Recall that a feature $X_r \in \textbf{X}_R$
 determines the target (with some Bayes noise as before). We introduce a parameter $\gamma$ that is the ratio of the number of $FK$ values not seen 
 during training to $|\mathcal{D}_{FK}|$. If $\gamma = 0$, no smoothing is needed; as $\gamma$ increases, more smoothing is needed.
 Figure~\ref{Figure:smoothings} presents the results.
