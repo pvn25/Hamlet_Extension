@@ -329,7 +329,7 @@ The grid is set as follows: \textit{minsplit} $\in \{ 1, 10, 100, 10^3\}$ and \t
 
 \textit{RBF-SVM}: There are two hyper-parameters to tune: \textit{C} and $\gamma$. \textit{C} controls the cost of misclassification, while $\gamma > 0$ controls the variance in 
 the Gaussian kernel (given two data points $x_i$ and $x_j$): $k(x_i,x_j) = \exp(-\gamma \cdot \lVert{x_i - x_j} \rVert ^2 )$.
-The grid is set as follows: \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$ and $\gamma \in \{10^{-4}, 10^{-3}, 0.01, 0.1, 1, 10\}$. 
+The grid is set as follows: \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$ and $\gamma \in \{10^{-4}, 10^{-3}, 0.01, 0.1, 1, 10\}$. For Movies and Expedia dataset, we further fine tune the gamma parameter to $\gamma \in \{2^{-7}, 2^{-6},2^{-5}, 2^{-4}, 2^{-3}, 2^{-2},2^{-1}, 1,2, 2^{2}, 2^{3}\}$ in order to achieve the best accuracy.
 
 After the validation procedure is completed, we score the final trained models on the holdout test set as the final indicators of their accuracy. 
 For additional insights, we also include a third approach for the decision tree: \textit{NoFK}, which is simply \textit{JoinAll} but with the foreign keys dropped a priori.
@@ -338,7 +338,10 @@ Table~\ref{Table:RealTest} presents the results.
 \begin{table}[t]
 \centering
 \includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table4.pdf}
-\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table5.pdf}
+\begin{align*}
+\textbf{Flights} :- NoR1: 0.8466 \quad NoR2: 0.8490 \quad NoR3: 0.8483 \\
+No R1,R2: 0.8488 \quad No R1,R3: 0.8481 \quad No R2,R3: 0.8519
+\end{align*}
 \caption{Robustness study for discarding dimension tables on the real datasets with a Gini decision tree.}
 \label{Table:robustness}
 \vspace{-4mm}
