@@ -84,10 +84,9 @@ bottlenecks in using foreign key features.
 
 \section{Introduction}
 
-Real-world relational databases typically contain multiple tables connected by \textit{database dependencies}~\cite{cowbook}. Thus, a common pre-processing step 
-performed by data scientists when learning an ML model is to \textit{join} all tables they think might provide ``useful'' features for their prediction 
-task~\cite{crossmine,orion,rendle,hamlet,olteanuf}.
-But in general, an arbitrary join might duplicate records in the table with the target, thus violating the ``IID'' sampling assumption~\cite{hastie}. 
+Real-world relational databases typically have many tables connected by \textit{database dependencies}~\cite{cowbook}. Thus, a common pre-processing step 
+before ML performed by data scientists is to \textit{join} all tables they think might provide ``useful'' features for the ML algorithm~\cite{crossmine,orion,rendle,hamlet,olteanuf}.
+In general, a join might duplicate records in the training set and violate the ``IID'' sampling assumption~\cite{hastie}. 
 In response, ``non-IID'' statistical relational learning (SRL) models have been studied extensively~\cite{srlbook}. 
 However, an important class of problems have fallen through the cracks in this dichotomy: 
 joins that do \textit{not} duplicate records, viz., \textit{key-foreign key} (KFK) joins, and thus, do not technically violate the IID sampling assumption.
@@ -96,41 +95,42 @@ joins that do \textit{not} duplicate records, viz., \textit{key-foreign key} (KF
 Consider an insurance data scientist using ML for a common classification task: predicting \textit{customer churn}. She starts with the main table (simplified 
 for exposition): \texttt{Customers} (\underline{\texttt{CustomerID}}, \texttt{Churn}, \texttt{Gender}, \texttt{Age}, \texttt{Employer}). 
 \texttt{Churn} is the target, while \texttt{Gender}, \texttt{Age}, and \texttt{Employer} are features. So far, this is a standard classification task.  
-But then, she notices that table \texttt{Employers} (\underline{\texttt{Employer}}, \texttt{State}, \texttt{Revenue}) in her database with extra features about 
+But then, she notices the table \texttt{Employers} (\underline{\texttt{Employer}}, \texttt{State}, \texttt{Revenue}) in her database with extra features about 
 customers' employers (e.g., Google or Microsoft). \texttt{Customers}.\texttt{Employer} is then a \textit{foreign key} that connects these two tables. 
 She joins the tables to bring in the extra features because she has a hunch that customers employed by rich corporations in coastal states might be less likely 
 to churn. She then tries various classifiers, e.g., logistic regression or decision trees.
 
-The join in our example is a KFK join that does not duplicate records: a customer has exactly one employer, although many customers might have the same employer.
-SRL is perhaps an overkill for this setting. In a sense, the features brought in by a KFK join, which we call \textit{foreign features}, are just \textit{functions} of 
-the foreign key feature; formally, this is called a \textit{functional dependency} (FD)~\cite{cowbook}.\footnote{Strictly speaking, an FD is different 
+The above join is a KFK join that does not duplicate records: a customer has exactly one employer (but many customers might have the same employer).
+SRL is an overkill for this setting because the features brought in by a KFK join, which we call \textit{foreign features}, are just \textit{functions} of 
+the foreign key feature; in database paralance, this is a \textit{functional dependency} (FD)~\cite{cowbook}.\footnote{Strictly speaking, an FD is different 
 from a Key-Foreign Key Dependency (KFKD)~\cite{dbtheorybook}, but for most practical purposes in ML, KFKDs behave just like FDs~\cite{hamlet}.} 
-An FD is analogous to arithmetic functions of numeric features (e.g., squares or products), except that foreign features typically provide a far more 
-\textit{coarse-grained view} than the foreign key feature that functionally determines them.
-Our example is not a one-off case; KFK joins are ubiquitous in various domains, including insurance, retail, telecommunications, Web security, 
-and e-commerce. In fact, from conversations with data scientists in these domains, we learned that they routinely perform such KFK joins before applying regular 
-IID ML classifiers (Section 3.1 gives more real-world examples). To introduce some terminology, the main table (\texttt{Customers} in our example)
-is often called the \textit{fact table}, while the table with the foreign features (\texttt{Employers}) is called a \textit{dimension table}~\cite{cowbook}.
-
-The coarse granularity of foreign features could indeed be helpful for \textit{interpretability} purposes. 
-But from an \textit{accuracy} (generalization) perspective, an interesting question to answer is the following: 
+An FD is to a categorical feature what an arithmetic function (e.g., square) is to a numeric feature. But foreign features typically provide a far more 
+\textit{coarse-grained view} than the foreign key feature.
+Our example is not a one-off; KFK joins are ubiquitous across domains, including insurance, retail, telecommunications, Web security, 
+and e-commerce. In fact, from conversations with many data scientists in such domains, we learned that they routinely perform KFK joins before using 
+regular ML classifiers (Section 3.1 gives more examples). To introduce some terminology, the main table (e.g., \texttt{Customers}) is often called the 
+\textit{fact table}, while a table with foreign features (e.g., \texttt{Employers}) is called a \textit{dimension table}~\cite{cowbook}.
+%
+The coarse granularity of foreign features could indeed help \textit{interpretability}. But from a pure \textit{accuracy} (generalization) perspective, 
+an interesting question to answer is: 
 
 \begin{center}\textit{Are foreign features really ``needed'' to improve ML accuracy?}\end{center}
 
 At first glance, this question might seem surprising and counter-intuitive. Why discard foreign features a priori? Why will foreign features 
 behave any differently than other features? 
 
-The answer to the first question is clear: avoiding foreign features reduces the total number of features \textit{without running any computations}, 
+The answer to the first question is clear: avoiding extra foreign features reduces the total number of features \textit{without running any computations}, 
 which reduces the runtimes of ML and feature selection methods~\cite{guyon}; moreover, join computation times are also saved. 
 Furthermore, worrying about fewer tables (and features) could help data scientists' productivity. For example, our conversations revealed that often, different tables 
-are ``owned'' by different teams even within the same company, which causes logistical headaches for data scientists when procuring extra dimension tables.
+are ``owned'' by different teams even within the same company, which causes logistical headaches for data scientists even to procure those extra dimension tables.
 
-The answer to the second question hinges on an obvious but key observation: \textit{given the foreign key, all foreign features are fixed} (the very definition of an FD!).
+The answer to the second question relies on an obvious but key fact: \textit{given the foreign key, all foreign features are fixed} (the very definition of an FD!).
 Formally, foreign features are \textit{redundant}, given the foreign key. 
-So, a tempting conclusion is that foreign features (and KFK joins of this sort) are never needed for accuracy! Alas, recent work poured cold water
-on this possibility: using a foreign key feature instead of foreign features often causes \textit{overfitting} even for simple \textit{linear} VC-dimension classifiers such as 
-logistic regression and Naive Bayes~\cite{hamlet}. This is because foreign key features typically have much larger domains than foreign features (in our example, 
-there are millions of employers but only $50$ states). Only when the number of training examples is far higher than the number of foreign key values ($>20$x) does the overfitting subside.
+So, a tempting conclusion is that foreign features (and such KFK joins) are never needed for accuracy! Alas, recent work poured cold water
+on this possibility: using a foreign key feature instead of foreign features often causes extra \textit{overfitting} even for simple \textit{linear} VC-dimension classifiers,
+e.g., logistic regression and Naive Bayes~\cite{hamlet}. This is because foreign key features typically have much larger domains than foreign features (e.g., 
+\texttt{Employer} has thousands of values but \texttt{State} has only a few dozen). 
+Only when the number of training examples is far higher than the number of foreign key values ($>20$x) does the extra overfitting subside.
 
 \textit{In this paper, we revisit the above question of whether foreign features are needed for accuracy for two popular \textit{infinite} VC-dimension classifiers: 
 decision tree and SVM with RBF kernel.}
