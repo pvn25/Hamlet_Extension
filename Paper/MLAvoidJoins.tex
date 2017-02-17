@@ -275,7 +275,11 @@ classifiers: decision tree (CART) and RBF-SVM.
 \caption{Dataset statistics. $q$ is the number of dimension tables. $n_S$ is the number of labeled examples, also overloaded to mean the number of training examples ($50\%$ as many). 
 Tuple Ratio is the ratio of the number of training examples to the number of $FK$ values for each dimension table: $50\% \times n_S / n_R$. 
 N/A means the corresponding dimension table can never be discarded because its corresponding foreign key has an ``open'' domain. 
+<<<<<<< HEAD
 }
+=======
+\red{TODO: TRs need to be halved. Use N/A for Expedia R2.}}
+>>>>>>> origin/master
 \label{Table:datastats}
 \end{table}
 
@@ -312,10 +316,18 @@ Each dataset comes pre-split 50\%:25\%:25\% for training-validation-test. We ret
 We compare two approaches: \textit{JoinAll}, which joins all base tables to provide all features to the classifier (the current widespread practice), and \textit{NoJoin},
 which avoids all foreign features a priori (the approach we study). We compare them for both a decision tree (CART) and an SVM with RBF kernel. For the decision trees, we 
 try three popular split criteria: Gini, information gain, and gain ratio~\cite{criteria}. We use the popular R packages ``rpart'' for the decision tree\footnote{For the gain 
+<<<<<<< HEAD
 ratio, we used \red{TODO} CORElearn library.} and ``e1071'' for the SVM. We use the validation set to perform hyper-parameter tuning using a standard grid search as follows:
 
 \textit{Decision Tree}: There are two hyper-parameters to tune: \textit{minsplit} and \textit{cp}. \textit{minsplit} is the number of observations that 
 must exist in a node for a split to be attempted. Any split that does not improve the fit by a factor of \textit{cp} is pruned off. The grid is set as follows: \textit{minsplit} $\in \{ 1, 10, 100, 10^3\}$ and \textit{cp} $\in \{10^{-4}, 10^{-3}, 0.01, 0.1, 0\}$   
+=======
+ratio, we used \red{TODO}.} and ``e1071'' for the SVM. We use the validation set to perform hyper-parameter tuning using a standard grid search as follows:
+
+\textit{Decision Tree}: There are two hyper-parameters to tune: \textit{minsplit} and \textit{cp}. \textit{minsplit} is the number of observations that 
+must exist in a node for a split to be attempted. Any split that does not improve the fit by a factor of \textit{cp} is pruned off.   
+\red{TODO: What is the grid?}
+>>>>>>> origin/master
 
 \textit{RBF-SVM}: There are two hyper-parameters to tune: \textit{C} and $\gamma$. \textit{C} controls the cost of misclassification, while $\gamma > 0$ controls the variance in 
 the Gaussian kernel (given two data points $x_i$ and $x_j$): $k(x_i,x_j) = \exp(-\gamma \cdot \lVert{x_i - x_j} \rVert ^2 )$.
@@ -364,7 +376,12 @@ More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a highe
 
 \begin{figure*}[t]
 \centering
+<<<<<<< HEAD
 \includegraphics[width=0.99\linewidth]{onexr.pdf}
+=======
+\includegraphics[width=0.99\linewidth]{onexr_row1.pdf}
+\includegraphics[width=0.99\linewidth]{onexr_row2.pdf}
+>>>>>>> origin/master
 \caption{Simulation results for Scenario OneXr. For all plots except (E), we fix $p = 0.1$. Note that $n_R \equiv |\mathcal{D}_{FK}|$.
 (A) Vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$.
 (B) Vary $n_R$, while fixing $(n_S, d_S, d_R) = (1000, 4, 4)$.
@@ -372,6 +389,10 @@ More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a highe
 (D) Vary $d_R$, while fixing $(n_R, d_S, d_R) = (1000, 40, 4)$.
 (E) Vary $p$,  while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$.
 (F) Vary $|\mathcal{D}_{X_r}|$, while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$; all other features in $\textbf{X}_R$ and $\textbf{X}_S$ are binary.
+<<<<<<< HEAD
+=======
+\red{TODO: Fix the layout and ordering}
+>>>>>>> origin/master
 }
 \label{Figure:OneXrSimulation}
 \end{figure*}
@@ -448,10 +469,18 @@ The 1-NN, as expected, is far less stable and the deviation starts even at a tup
 
 \begin{figure*}[t]
 \centering
+<<<<<<< HEAD
 \includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{skewfk_onexr.pdf}
 \caption{Scenario OneXr simulations with skew in $P(FK)$. (A-B) Zipfian skew. (C-D) Needle-and-thread skew. For (A) and (C), we vary the respective skew parameter
 (Zipfian skew parameter and needle probability), while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$. For (B) and (D), we vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$,
 the Zipfian skew parameter to $2$ for (B), and the needle probability to $0.5$ for (D).
+=======
+\includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{onexr_zipf.png}
+\caption{Scenario OneXr simulations with skew in $P(FK)$. (A-B) Zipfian skew. (C-D) Needle-and-thread skew. For (A) and (C), we vary the respective skew parameter
+(Zipfian skew parameter and needle probability), while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$. For (B) and (D), we vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$,
+the Zipfian skew parameter to $2$ for (B), and the needle probability to $0.5$ for (D).
+\red{TODO: Make this a pdf, not png}
+>>>>>>> origin/master
 }
 \label{Figure:OneXrZipfSimulation}
 \end{figure*}
@@ -471,8 +500,14 @@ the needle-and-thread case! This result further affirms the remarkable robustnes
 
 \begin{figure*}[t]
 \centering
+<<<<<<< HEAD
 \includegraphics[width=0.99\linewidth]{xsxr1.pdf}
 \caption{Simulation results for Scenario XSXR. The parameter values varied/fixed ($n_S$, $n_R$, $d_S$, and $d_R$) are the same as in Figure~\ref{Figure:OneXrSimulation} (A)-(D). 
+=======
+\includegraphics[width=0.99\linewidth]{xsxr.png}
+\caption{Simulation results for Scenario XSXR. The parameter values varied/fixed ($n_S$, $n_R$, $d_S$, and $d_R$) are the same as in Figure~\ref{Figure:OneXrSimulation} (A)-(D). 
+\red{TODO: Make this a pdf, not png}
+>>>>>>> origin/master
 }
 \label{Figure:XsXrSimulation}
 \end{figure*}
@@ -575,12 +610,15 @@ We now discuss two key practical issues caused by the large domains of foreign k
 In contrast to prior work on handling regular large-domain features~\cite{dtreedomain}, foreign key features are distinct in that they have coarser-grained 
 side information available in the foreign features, which can be exploited, if possible.
 
+<<<<<<< HEAD
 \begin{figure}
 \centering
 \includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{dom_comp.pdf}
 \caption{Domain Compression applied on (A) Flights Dataset (B) Yelp Dataset}
 \label{Figure:Compression}
 \end{figure}
+=======
+>>>>>>> origin/master
 
 \subsection{Foreign Key Domain Compression}
 
@@ -604,7 +642,11 @@ We leave more sophisticated approaches to future work.
 We now empirically compare the above two heuristics using three of the real datasets. Our methodology is as follows. We retain the 50:25:25 
 train-validate-test split from before. We use the training split to construct $f$ and then compress $FK$ for the whole dataset. We then use
 the validation set as before to tune the hyper-parameters and measure the holdout test error. For random hashing, we report the average across 
+<<<<<<< HEAD
 five runs. Figure~\ref{Figure:Compression} presents the results. 
+=======
+five runs. \red{Figure~\ref{Figure:Compression} presents the results. TODO}
+>>>>>>> origin/master
 
 
 \eat{
