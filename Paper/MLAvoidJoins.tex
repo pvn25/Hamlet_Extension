@@ -103,13 +103,13 @@ to churn. She then tries various classifiers, e.g., logistic regression or decis
 
 The above join is a KFK join that does not duplicate records: a customer has exactly one employer (but many customers might have the same employer).
 SRL is an overkill for this setting because the features brought in by a KFK join, which we call \textit{foreign features}, are just \textit{functions} of 
-the foreign key feature; in database paralance, this is a \textit{functional dependency} (FD)~\cite{cowbook}.\footnote{Strictly speaking, an FD is different 
+the foreign key feature; in database parlance, this is a \textit{functional dependency} (FD)~\cite{cowbook}.\footnote{Strictly speaking, an FD is different 
 from a Key-Foreign Key Dependency (KFKD)~\cite{dbtheorybook}, but for most practical purposes in ML, KFKDs behave just like FDs~\cite{hamlet}.} 
 An FD is to a categorical feature what an arithmetic function (e.g., square) is to a numeric feature. But foreign features typically provide a far more 
 \textit{coarse-grained view} than the foreign key feature.
 Our example is not a one-off; KFK joins are ubiquitous across domains, including insurance, retail, telecommunications, Web security, 
 and e-commerce. In fact, from conversations with many data scientists in such domains, we learned that they routinely perform KFK joins before using 
-regular ML classifiers (Section 3.1 gives more examples). To introduce some terminology, the main table (e.g., \texttt{Customers}) is often called the 
+regular ML classifiers (Section 3 gives more examples). To introduce some terminology, the main table (e.g., \texttt{Customers}) is often called the 
 \textit{fact table}, while a table with foreign features (e.g., \texttt{Employers}) is called a \textit{dimension table}~\cite{cowbook}.
 %
 The coarse granularity of foreign features could indeed help \textit{interpretability}. But from a pure \textit{accuracy} (generalization) perspective, 
