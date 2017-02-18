@@ -48,7 +48,7 @@
 
 \begin{document}
 
-\title{Stop That Join! Discarding Dimension Tables \\when Learning Infinite VC-Dimension Classifiers}
+\title{Stop That Join! Discarding Dimension Tables \\when Learning High Capacity Classifiers}
 
 \author{Vraj Shah}
 \affiliation{\institution{University of California, San Diego}}
@@ -61,16 +61,16 @@
 \email{jerryzhu@cs.wisc.edu}
 
 \begin{abstract}
-Many datasets are have multiple tables connected by key-foreign key dependencies.
+Many datasets have multiple tables connected by key-foreign key dependencies.
 Data scientists usually join all tables to bring in extra features from the so-called 
 dimension tables. Unlike the statistical relational learning setting, such joins do 
 not cause record duplications, which means regular IID models are typically used. Recent
 work demonstrated the possibility of using foreign key features as representatives for the 
 dimension tables' features and eliminating the latter a priori, potentially saving runtime
-and effort of data scientists. However, the prior work was restricted to linear VC dimension 
-models and it established a dichotomy of when dimension tables are safe to discard due to extra
+and effort of data scientists. However, the prior work was restricted to linear models 
+and it established a dichotomy of when dimension tables are safe to discard due to extra
 overfitting caused by the use of foreign key features. In this work, we revisit that question 
-for two popular infinite VC dimenion models: decision tree and SVM with RBF kernel. Our 
+for two popular high capacity models: decision tree and SVM with RBF kernel. Our 
 extensive empirical and simulation-based analyses show that these two classifers are surprisingly and 
 counter-intuitively more robust to discarding dimension tables and face much \textit{less} extra overfitting 
 than linear models. We provide intuitive explanations for their behavior and identify new open 
@@ -85,7 +85,8 @@ bottlenecks in using foreign key features.
 \section{Introduction}
 
 Real-world relational databases typically have many tables connected by \textit{database dependencies}~\cite{cowbook}. Thus, a common pre-processing step 
-before ML performed by data scientists is to \textit{join} all tables they think might provide ``useful'' features for the ML algorithm~\cite{crossmine,orion,rendle,hamlet,olteanuf}.
+performed by data scientists before building a machine learning (ML) model is to \textit{join} all tables they think might provide 
+``useful'' features~\cite{crossmine,orion,rendle,hamlet,olteanuf}.
 In general, a join might duplicate records in the training set and violate the ``IID'' sampling assumption~\cite{hastie}. 
 In response, ``non-IID'' statistical relational learning (SRL) models have been studied extensively~\cite{srlbook}. 
 However, an important class of problems have fallen through the cracks in this dichotomy: 
@@ -132,24 +133,24 @@ e.g., logistic regression and Naive Bayes~\cite{hamlet}. This is because foreign
 \texttt{Employer} has thousands of values but \texttt{State} has only a few dozen). 
 Only when the number of training examples is far higher than the number of foreign key values ($>20$x) does the extra overfitting subside.
 
-\textit{In this paper, we revisit the above question of whether foreign features are needed for accuracy for two popular \textit{infinite} VC-dimension classifiers: 
+\textit{In this paper, we revisit the above question of whether foreign features are needed for accuracy for two popular \textit{high capacity} classifiers: 
 decision tree and SVM with RBF kernel.}
 
-The natural expectation is that such complex models might face even higher overfitting than linear models if foreign features are discarded. 
-Surprisingly, our extensive empirical and simulation analyses show that their behavior is the \textit{exact opposite}! We start by presenting empirical results on the 
-real datasets with KFK joins from~\cite{hamlet}. For both classifiers, it turns out that in \textit{almost all cases}, dimension tables can be safely 
+The natural expectation is that these complex models, which have infinite VC dimensions, might face even higher overfitting than linear models if foreign features are 
+discarded. In this paper, we show that surprisingly, their behavior is the \textit{exact opposite}! We start by presenting empirical results 
+on the real datasets with KFK joins from~\cite{hamlet}. For both classifiers, it turns out that in \textit{almost all cases}, dimension tables can be safely 
 discarded. In contrast, for linear classifiers, they could be discarded in only half of the cases.
 
 To understand the above surprising behavior in depth, we conduct an extensive simulation study using a decision tree. We generate data for a two-table KFK join 
 and embed various ``true'' distributions for the target. This includes a known ``worst-case'' scenario for discarding foreign features a priori when learning a linear model, 
 i.e., the (holdout) test errors blow up~\cite{hamlet}. We vary different properties of the data and the true distribution: 
 numbers of features in each base table, numbers of training examples, foreign key domain size, noise in the data, and foreign key skew. 
-In very few of these cases does discarding foreign features cause the error to rise significantly! Indeed, the only scenario where discarding foreign features seems to increase 
+In very few of these cases does discarding foreign features cause the error to rise beyond $1\%$! Indeed, the only scenario where discarding foreign features seems to increase 
 overfitting significantly is when the number of training examples is less than $3$x the number of foreign key values. This scenario arose in only one of the seven real datasets.
 These results are in stark constrast to the results for linear models.
 
-Our counter-intuitive results raise open questions for ML theoretical research about why decision trees and RBF-SVMs are so robust to discarding 
-foreign features even though they have infinite VC dimensions. As a step in this direction, we provide some intuitive explanations that shed some light into their behavior. 
+Our counter-intuitive results raise open questions for ML theoretical research about why decision trees and RBF-SVMs are so much more robust to discarding foreign features
+than linear models. As a step in this direction, we provide some intuitive explanations that shed some light into their behavior. 
 Essentially, we explain why RBF-SVMs with foreign key features behave somewhat like a 1-nearest neighbor classifier due to the high dimensionality of foreign key features with 
 one-hot encoding. While this leads to a form of \textit{memorization} of the foreign key's domain, this seems to have little effect on the model's generalization or test errors.
 This is similar to how memorization seems to occur in deep neural networks~\cite{rechtdnn}, but a key difference in our setting is that such memorization does not apply to
@@ -165,7 +166,7 @@ more similarly to a 1-nearest neighbor classifier when using the foreign key fea
 Finally, from follow-up conversations with some data scientists, we learned that while they found foreign key features to be helpful for accuracy, they faced two new practical 
 bottlenecks when using them for decision trees. The first is that the sheer size of a foreign key feature's domain makes it hard to interpret and visualize the trees. 
 The second is that some foreign key values may not have any training examples even if they are known to be in the domain. 
-We propose simple but effective heuristics to handle these bottlenecks and make foreign key features more practical. For the first bottleneck, we propose simpl lossy 
+We propose simple but effective heuristics to handle these bottlenecks and make foreign key features more practical. For the first bottleneck, we propose simple lossy 
 \textit{domain compression} methods that are configurable with a user-given size budget. For the second bottleneck, we propose a form of foreign key \textit{smoothing} 
 that exploits foreign features as side information. We validate the accuracy of these techniques using both real and synthetic datasets.
 
@@ -173,7 +174,7 @@ that exploits foreign features as side information. We validate the accuracy of 
 \noindent Overall, the contributions of this paper are as follows:
 
 \begin{packeditems}
-\item To the best of our knowledge, this is the first paper to study the effects of discarding foreign features and KFK joins on infinite VC-dimension classifiers.
+\item To the best of our knowledge, this is the first paper to study the effects of discarding foreign features and KFK joins on high capacity classifiers.
 We present an empirical study with several real-world datasets that shows that decision trees and RBF-SVMs are surprisingly robust to discarding foreign features a priori.
 
 \item We conduct a comprehensive and in-depth simulation study with a decision tree to assess the effects of different data properties on how safe foreign features are to discard.
@@ -234,17 +235,20 @@ reduce the domains of foreign key features for decision trees are inspired by su
 % We now explain our problem setting and notation, followed by an example. We then explain our assumptions and scope.
 
 \paragraph*{\textbf{Notation}}
-The setting we focus on is the following: the dataset has a set of table in the so-called \textit{star schema} with KFK dependencies.
-Star schemas are ubiquitous in diverse applications ranging from insurance to recommendation systems~\cite{cowbook}.
-The central table with the target is called the ``fact'' table, \textbf{S}. It has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_q)$,
-while a ``dimension'' table is denoted $\textbf{R}_i$ ($i = 1$ to $q$) and it has the schema $\textbf{R}_i(\underline{RID_i},\textbf{X}_{R_i})$.
-In the schema, $Y$ is the learning target (class label), $\textbf{X}_S$ and $\textbf{X}_{R_i}$ are vectors (sequences) of features, $RID_i$ is the primary key
+The setting we focus on is the following: the dataset has a set of tables in the \textit{star schema} with KFK dependencies (KFKDs).
+Star schemas are ubiquitous in many applications~\cite{cowbook}.
+The fact table, which has the target variable, is denoted \textbf{S}. It has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_q)$.
+A dimension table is denoted $\textbf{R}_i$ ($i = 1$ to $q$) and it has the schema $\textbf{R}_i(\underline{RID_i},\textbf{X}_{R_i})$.
+$Y$ is the target variable (class label), $\textbf{X}_S$ and $\textbf{X}_{R_i}$ are vectors (sequences) of features, $RID_i$ is the primary key
 of $\textbf{R}_i$, while $FK_i$ is a foreign key feature that refers to $\textbf{R}_i$. We call $\textbf{X}_S$ \textit{home} features and $\textbf{X}_{R_i}$ \textit{foreign} features.
 For ease of exposition, we also treat \textbf{X} as a \textit{set} of features since the order among features is immaterial in our setting.
 Let \textbf{T} denote the output of the projected equi-join (key-foreign key, or KFK for short) query that constructs the full training dataset by 
 \textit{concatenating} the features from all base tables: $\textbf{T} \leftarrow \pi(\textbf{R} \bowtie_{RID=FK} \textbf{S})$. In general, its schema is 
-$\textbf{T}(\underline{SID},Y,\textbf{X}_S,FK_1,\dots,FK_q,\textbf{X}_{R_1},\dots,\textbf{X}_{R_q})$.
-In contrast to our setting, traditional ML formulations do not distinguish between home features, foreign keys, and foreign features.
+$\textbf{T}(\underline{SID},Y,\textbf{X}_S,FK_1,\dots,FK_q,\textbf{X}_{R_1},\dots,\textbf{X}_{R_q})$. In contrast to our setting, traditional ML 
+formulations do not distinguish between home features, foreign keys, and foreign features. The number of tuples in \textbf{S} (resp.~\textbf{R}) is 
+denoted $n_S$ (resp.~$n_R$); the number of features in $\textbf{X}_S$ (resp.~$\textbf{X}_R$) is denoted $d_S$ (resp.~$d_R$). Without loss of generality, we
+assume that the join is not selective, which means $n_S$ is also the number of tuples in \textbf{T}. $\mathcal{D}_{FK}$ denotes the domain of $FK$ 
+and by definition, $|\mathcal{D}_{FK}| = n_R$. We call $\frac{n_S}{n_R}$ the \textit{tuple ratio}.
 \eat{\footnote{Note that this setting is 
 different from the statistical relational learning (SRL) setting in which the joins could violate the IID assumption because they are not KFK (labeled examples in \textbf{S}
 might get duplicated. KFK joins do not cause such repetitions.}}
@@ -271,7 +275,7 @@ have known finite domains, possibly including a special ``Others'' placeholder t
 \texttt{Employer} and \texttt{Gender} have known finite domains. In general, $FK_i$ can take values only from the given set of $\textbf{R}_i.RID_i$ values 
 (new $FK_i$ values are mapped to ``Others''). Since ML models are rebuilt periodically in practice, new information can then be added to expand feature domains. 
 We emphasize that our goal is \textit{not} to create new classification or feature selection algorithms, nor is to compare which algorithms yield lowest errors.
-Our goal is to expose and analyze how KFKDs and FDs enable us to dramatically discard foreign features a priori when learning two popular infinite VC-dimension 
+Our goal is to expose and analyze how KFKDs and FDs enable us to dramatically discard foreign features a priori when learning two popular high capacity 
 classifiers: decision tree (CART) and RBF-SVM.
 
 
@@ -279,9 +283,10 @@ classifiers: decision tree (CART) and RBF-SVM.
 \begin{table}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{table1.pdf}
-\caption{Dataset statistics. $q$ is the number of dimension tables. $n_S$ is the number of labeled examples, also overloaded to mean the number of training examples ($50\%$ as many). 
-Tuple Ratio is the ratio of the number of training examples to the number of $FK$ values for each dimension table: $50\% \times n_S / n_R$. 
-N/A means the corresponding dimension table can never be discarded because its corresponding foreign key has an ``open'' domain. 
+\vspace{-4mm}
+\caption{Dataset statistics. $q$ is the number of dimension tables. All features are categorical. $n_S$ is the number of labeled examples, also 
+overloaded to mean the number of training examples ($50\%$ as many). So, the tuple ratio here is actually $50\% \times n_S / n_R$. N/A means the 
+corresponding dimension table can never be discarded because its corresponding foreign key has an ``open'' domain.
 }
 \label{Table:datastats}
 \vspace{-4mm}
@@ -292,18 +297,20 @@ N/A means the corresponding dimension table can never be discarded because its c
 \paragraph*{\textbf{Datasets}}
 We take the seven real datasets from~\cite{hamlet}; these are originally from Kaggle, GroupLens, \url{openflights.org}, \url{mtg.upf.edu/node/1671}, and \url{last.fm}.
 Two datasets have binary targets (Flights and Expedia); the others have multi-class ordinal targets. For the sake of simplicity, we binarize all targets 
-for this paper (this change does not affect our overall conclusions). The dataset statistics are provided in Table~\ref{Table:datastats}. 
+for this paper by grouping ordinal targets into lower and upper halves (this change does not affect our overall conclusions). 
+The dataset statistics are provided in Table~\ref{Table:datastats}. 
 We briefly describe the task for each dataset and explain what the foreign features are. More details about their schemas, including the list 
 of all features are already in the public domain (listed in~\cite{hamlet}). 
-\textit{All of our datasets, scripts, and code will be released on our project webpage\footnote{\url{http://cseweb.ucsd.edu/~arunkk/hamlet}} to make reproducibility easier.}
+\textit{All of our datasets, scripts, and code will be made available on our project webpage\footnote{\url{http://cseweb.ucsd.edu/~arunkk/hamlet}} to make reproducibility easier.}
 
 
 \begin{table*}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{table2.pdf}
+\vspace{-2mm}
 \caption{Holdout test accuracy on the real-world datasets.}
 \label{Table:RealTest}
-\vspace{-2mm}
+\vspace{-4mm}
 \end{table*}
 
 \textit{Walmart}: predict if department-wise sales will be high using past sales (fact table) joined with stores and weather/economic indicators (two dimension tables).
@@ -319,17 +326,18 @@ of all features are already in the public domain (listed in~\cite{hamlet}).
 \paragraph*{\textbf{Methodology}}
 Each dataset comes pre-split 50\%:25\%:25\% for training-validation-test. We retain the splits as is.
 We compare two approaches: \textit{JoinAll}, which joins all base tables to provide all features to the classifier (the current widespread practice), and \textit{NoJoin},
-which avoids all foreign features a priori (the approach we study). We compare them for both a decision tree (CART) and an SVM with RBF kernel. For the decision trees, we 
-try three popular split criteria: Gini, information gain, and gain ratio. We use the popular R packages ``rpart'' for the decision tree\footnote{For the gain 
+which avoids all foreign features a priori (the approach we study). We compare them for both a decision tree (CART) and an SVM with RBF kernel. For decision trees, we 
+experiment with three popular split criteria: Gini, information gain, and gain ratio. We use the popular R packages ``rpart'' for the decision tree\footnote{For the gain 
 ratio, we used ``CORElearn'' package.} and ``e1071'' for the SVM. We use the validation set to perform hyper-parameter tuning using a standard grid search as follows:
 
 \textit{Decision Tree}: There are two hyper-parameters to tune: \textit{minsplit} and \textit{cp}. \textit{minsplit} is the number of observations that 
 must exist in a node for a split to be attempted. Any split that does not improve the fit by a factor of \textit{cp} is pruned off. 
 The grid is set as follows: \textit{minsplit} $\in \{ 1, 10, 100, 10^3\}$ and \textit{cp} $\in \{10^{-4}, 10^{-3}, 0.01, 0.1, 0\}$   
 
-\textit{RBF-SVM}: There are two hyper-parameters to tune: \textit{C} and $\gamma$. \textit{C} controls the cost of misclassification, while $\gamma > 0$ controls the variance in 
+\textit{RBF-SVM}: There are two hyper-parameters to tune: \textit{C} and $\gamma$. \textit{C} controls the cost of misclassification, while $\gamma > 0$ controls the bandwidth in 
 the Gaussian kernel (given two data points $x_i$ and $x_j$): $k(x_i,x_j) = \exp(-\gamma \cdot \lVert{x_i - x_j} \rVert ^2 )$.
-The grid is set as follows: \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$ and $\gamma \in \{10^{-4}, 10^{-3}, 0.01, 0.1, 1, 10\}$. For Movies and Expedia dataset, we further fine tune the gamma parameter to $\gamma \in \{2^{-7}, 2^{-6},2^{-5}, 2^{-4}, 2^{-3}, 2^{-2},2^{-1}, 1,2, 2^{2}, 2^{3}\}$ in order to achieve the best accuracy.
+The grid is set as follows: \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$ and $\gamma \in \{10^{-4}, 10^{-3}, 0.01, 0.1, 1, 10\}$.\footnote{On \textit{Movies} and \textit{Expedia}
+alone, we perform one more fine tuning step with $\gamma \in \{2^{-7}, 2^{-6},2^{-5}, 2^{-4}, 2^{-3}, 2^{-2},2^{-1}, 1,2, 2^{2}, 2^{3}\}$ to improve accuracy.}
 
 After the validation procedure is completed, we score the final trained models on the holdout test set as the final indicators of their accuracy. 
 For additional insights, we also include a third approach for the decision tree: \textit{NoFK}, which is simply \textit{JoinAll} but with the foreign keys dropped a priori.
@@ -338,10 +346,12 @@ Table~\ref{Table:RealTest} presents the results.
 \begin{table}[t]
 \centering
 \includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{table4.pdf}
+\vspace{-5mm}
 \begin{align*}
-\textbf{Flights} :- NoR1: 0.8466 \quad NoR2: 0.8490 \quad NoR3: 0.8483 \\
+\textbf{Flights} : NoR1: 0.8466 \quad NoR2: 0.8490 \quad NoR3: 0.8483 \\
 No R1,R2: 0.8488 \quad No R1,R3: 0.8481 \quad No R2,R3: 0.8519
 \end{align*}
+\vspace{-4mm}
 \caption{Robustness study for discarding dimension tables on the real datasets with a Gini decision tree.}
 \label{Table:robustness}
 \vspace{-4mm}
@@ -350,20 +360,22 @@ No R1,R2: 0.8488 \quad No R1,R3: 0.8481 \quad No R2,R3: 0.8519
 \vspace{-1mm}
 \paragraph*{\textbf{Results}}
 Our first and most important observation is that for almost all the datasets (\textit{Yelp} being the exception) and for all three split criteria, the accuracy of the decision tree 
-is quite comparable between \textit{JoinAll} and \textit{NoJoin}. The trend is quite similar for the RBF-SVM as well.
-This validates our core claim: foreign features (dimension tables) can often be discarded safely without affecting accuracy significanty even for such infinite VC-dimension models.
+is comparable between \textit{JoinAll} and \textit{NoJoin}. The trend is quite similar for the RBF-SVM as well.
+This validates our core claim: foreign features (dimension tables) can often be discarded safely without affecting accuracy significanty even for such high capacity models.
 In other words, discarding dimension tables and using foreign key features does \textit{not} lead to extra overfitting in many cases.
 Furthermore, for almost all datasets, \textit{NoFK} often has much lower accuracy than both \textit{JoinAll} and \textit{NoJoin}, which validates the importance of foreign key features.
 Surprisingly, in some cases (e.g., Gini on \textit{Flights} and gain ratio on \textit{Books}), \textit{NoJoin} has even slightly higher accuracy than \textit{JoinAll}.
 The only dataset for the decision tree on which \textit{NoJoin} has a gap of at least $0.01$ with \textit{JoinAll} and has lower accuracy is \textit{Yelp}. 
 A similar behavior is seen on \textit{LastFM} and \textit{Books} as well for the SVM although the gap is smaller.
 
-To understand where the small decrease in accuracy comes from, we conduct a ``robustness'' experiment in which we discard dimension tables one at a time instead of just all at a time 
-as \textit{NoJoin} does. Table~\ref{Table:robustness} presents this experiment's results for the decision tree with Gini.
-Clearly, on the other $6$ datasets, discarding each dimension table one at a time (and also two at a time in the case of \textit{Flights}) did not differ much from \textit{NoJoin}.
-But on \textit{Yelp}, the accuracy drops only when $\textbf{R}_2$ (users table) is dropped. From Table~\ref{Table:datastats}, we find that the tuple ratio for $\textbf{R}_2$ in 
-\textit{Yelp} is extremely low: $2.4$. So, there are not enough training examples per unique foreign key value for $\textbf{R}_2$ in \textit{Yelp}, i.e., its tuple ratio is too low. 
-Every other dimension table can safely be discarded. A similar situation arises for the SVM on \textit{Yelp}, as well as, \textit{LastFM}, and \textit{Books}.
+To understand the accuracy results more deeply, we conduct a ``robustness'' experiment by discarding dimension tables one at a time instead of all at a time.
+Table~\ref{Table:robustness} presents this experiment's results for the decision tree with Gini.
+Discarding each dimension table one at a time (and also two at a time in the case of \textit{Flights}) did not differ much from \textit{NoJoin}, except for \textit{Yelp}.
+On \textit{Yelp}, the accuracy drops only when $\textbf{R}_2$ (users table) is dropped. From Table~\ref{Table:datastats}, we find that the tuple ratio for $\textbf{R}_2$ in 
+\textit{Yelp} is extremely low: $2.5$. So, there are not enough training examples per unique foreign key value for $\textbf{R}_2$ in \textit{Yelp}, i.e., its tuple ratio is too 
+low.\footnote{Interestingly, the tuple ratio is similarly low ($2.6$) for $\textbf{R}_2$ in \textit{Books} but the error of \textit{NoJoin} is not much higher. So, the tuple 
+ratio seems to be a \textit{conservative} indicator: it can tell if an error is likely to rise but the error may not actually rise in some case.}
+Almost every other dimension table can safely be discarded. A similar situation arises for the SVM on \textit{Yelp}, as well as, \textit{LastFM}, and \textit{Books}. 
 
 Overall, of the $14$ dimension tables across the $7$ datasets that can potentially be discarded, we are able to discard $13$ for the decision tree, with 
 the tuple ratio threshold being about $3$x. For the SVM, we are able to discard $11$ of them, with the tuple ratio threshold being about $6$x.
@@ -372,8 +384,8 @@ $7$ of the dimension tables could be discarded without affecting accuracy signif
 needs six times fewer training examples and the RBF-SVM needs three times fewer training examples than linear models to avoid extra overfitting when discarding foreign features}! 
 This is counter-intuitive because conventional wisdom is that more complex ML models need more (not less) training examples to avoid extra overfitting.
 
-For an interesting comparison that we will use later on, we also present the results for a classical ``braindead'' classifier: 1-nearest neighbor~\cite{mitchellbook}. 
-1-NN performs sheer \textit{memorization}. But surprisingly, as Table~\ref{Table:RealTest} shows,  its accuracy is sometimes comparable to decision trees and RBF-SVMs! 
+For an interesting comparison that we will use later on, we also present the results for a classical ``braindead'' classifier: 1-nearest neighbor~\cite{mitchellbook}.
+Surprisingly, as Table~\ref{Table:RealTest} shows,  its accuracy is sometimes comparable to decision trees and RBF-SVMs! 
 More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a higher accuracy than with \textit{JoinAll}. We discuss this behavior further in Section 4.3.
 
 \begin{figure*}[t]
@@ -399,18 +411,18 @@ underlying ``true'' data distribution. We focus on a two-table KFK join for simp
 We use the decision tree for this study because it exhibited the maximum robustness to discarding dimension tables on the real data. 
 Our simulation study will now ``stress test'' its robustness.
 But note that our simulation methodology is generic enough to be applicable to any other classifier because we only use 
-standard generic notions of of error and variance.
+standard generic notions of error and variance.
 
 \vspace{-1mm}
 \paragraph*{\textbf{Setup and Data Synthesis}}
-There is one attribute table \textbf{R} ($k=1$), and all of $\textbf{X}_S$, $\textbf{X}_R$, and $Y$ are boolean (domain size $2$).
+There is one dimension table \textbf{R} ($q=1$), and all of $\textbf{X}_S$, $\textbf{X}_R$, and $Y$ are boolean (domain size $2$).
 We control the ``true'' distribution $P(Y,\textbf{X})$ and sample labeled examples in an IID manner from it.
-We study two different scenarios for what features \textbf{X} are used in $P$: \texttt{OneXr} and \texttt{XSXR}.
+We study two different scenarios for what features are used to (probabilistically) determine $Y$: \texttt{OneXr} and \texttt{XSXR}.
 These scenarios represent opposite extremes for how likely the (test) error is likely to shoot up when $\textbf{X}_R$ is discarded
-and $FK$ is used as a representative~\cite{hamlet}. In the \texttt{OneXr} scenario, a lone feature $X_r \in \textbf{X}_R$ is 
-what is the only feature used in $P$; the rest of $\textbf{X}_R$ and $\textbf{X}_S$ are random noise (but note that $FK$ will not 
-be noise because it functionally determines $X_r$). In the \texttt{XSXR} scenario, all features in $\textbf{X}_S$ and $\textbf{X}_R$
-are used in $P$. Intuitively, \texttt{OneXr} is the worst-case scenario for discarding $\textbf{X}_R$ because $X_r$ is typically 
+and $FK$ is used as a representative~\cite{hamlet}. In \texttt{OneXr}, a lone feature $X_r \in \textbf{X}_R$ determines $Y$; the 
+rest of $\textbf{X}_R$ and $\textbf{X}_S$ are random noise (but note that $FK$ will not 
+be noise because it functionally determines $X_r$). In \texttt{XSXR}, all features in $\textbf{X}_S$ and $\textbf{X}_R$ determine $Y$. 
+Intuitively, \texttt{OneXr} is the worst-case scenario for discarding $\textbf{X}_R$ because $X_r$ is typically 
 far more succinct than $FK$, which we expect to translate to less possibility of overfitting with NoJoin. Note that if we use $FK$ 
 directly in $P$, $\textbf{X}_R$ can be more easily discarded because $FK$ conveys more information anyway; so, we skip this scenario.
 
@@ -427,24 +439,24 @@ The ``true'' distribution is set as follows: $P(Y=0|X_r=0)=P(Y=1|X_r=1)=p$, wher
 The exact procedure for sampling examples is as follows: (1) Construct tuples of \textbf{R} by sampling $\textbf{X}_R$ values randomly (each feature value 
 is an independent coin toss). (2) Construct the tuples of \textbf{S} by sampling $\textbf{X}_S$ values randomly (independent coin tosses). (3) Assign $FK$ 
 values to \textbf{S} tuples uniformly randomly from $\mathcal{D}_{FK}$. (4) Assign $Y$ values to \textbf{S} tuples by looking up into their respective $X_r$ 
-value (implicit join on $FK = RID$) and sampling from the above true distribution.
+value (implicit join on $FK = RID$) and sampling from the above conditional distribution.
 
 We compare the same three approaches: \textit{JoinAll}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK, \textbf{X}_R]$, 
 \textit{NoJoin}, which uses $\textbf{X} \equiv [\textbf{X}_S, FK]$ (i.e., discard $\textbf{X}_R$), and \textit{NoFK}, 
 which uses $\textbf{X} \equiv [\textbf{X}_S, \textbf{X}_R]$ (i.e., discard $FK$).
-Our hypothesis is that \textit{JoinAll} and \textit{NoJoin} will exhibit similar errors in most cases. 
-We include \textit{NoFK} for a lower bound on errors, since we know $FK$ is not directly a part of the true 
-distribution.\footnote{In general though, \textit{NoFK} could have much higher errors if $FK$ is part of the true distribution; indeed, \textit{NoFK} had 
+% Our hypothesis is that \textit{JoinAll} and \textit{NoJoin} will exhibit similar errors in most cases. 
+We include \textit{NoFK} for a lower bound on errors, since we know $FK$ does not determine determine $Y$ (although indirectly it 
+does).\footnote{In general though, \textit{NoFK} could have much higher errors if $FK$ is part of the true distribution; indeed, \textit{NoFK} had 
 much higher errors on many real datasets (Table~\ref{Table:RealTest}).}
 Figure~\ref{Figure:OneXrSimulation} presents the results for the (holdout) test errors for varying each relevant data and distribution parameter, one at a time.
 
-We see that regardless of the parameter being varied, in almost all cases, \textit{NoJoin} and \textit{JoinAll} have virtually identical errors (close to the Bayes 
+Interestingly, regardless of the parameter being varied, in almost all cases, \textit{NoJoin} and \textit{JoinAll} have virtually identical errors (close to the Bayes 
 error)! From inspecting the actual decision trees learned in these two settings, we found that in almost all cases, $FK$ was used heavily for partitioning and seldom was 
 a feature from $\textbf{X}_R$, including $X_r$, used. This suggests that $FK$ can indeed act as a good representative of $\textbf{X}_R$ even in this extreme sccenario. 
 In contrast to these results,~\cite{hamlet} reported that for linear models, the errors of \textit{NoJoin} shot up compared to \textit{JoinAll} (a gap of nearly $0.05$)
-as the tuple ratio starts falling below $20$. In stark contrast, as Figure~\ref{Figure:OneXrSimulation}(A2) shows, even for a tuple ratio of just $3$, \textit{NoJoin} 
+as the tuple ratio starts falling below $20$. In stark contrast, as Figure~\ref{Figure:OneXrSimulation}(B) shows, even for a tuple ratio of just $3$, \textit{NoJoin} 
 and \textit{JoinAll} have similar errors with the decision tree. This corroborates the results seen for the decision tree on the real datasets (Table~\ref{Table:RealTest}).
-When $n_S$ becomes very low or when $|\mathcal{D}_{FK}$ becomes very high, the absolute errors of \textit{JoinAll} and \textit{NoJoin} increase compared to \textit{NoFK}. 
+When $n_S$ becomes very low or when $|\mathcal{D}_{FK}|$ becomes very high, the absolute errors of \textit{JoinAll} and \textit{NoJoin} increase compared to \textit{NoFK}. 
 This suggests that when the tuple ratio is very low, \textit{NoFK} is perhaps worth trying too. This is similar to the behavior seen on \textit{Yelp}. 
 Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \textit{JoinAll}.
 
@@ -468,7 +480,7 @@ The 1-NN, as expected, is far less stable and the deviation starts even at a tup
 \centering
 \includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{skewfk_onexr.pdf}
 \vspace{-2mm}
-\caption{Scenario OneXr simulations with skew in $P(FK)$. (A-B) Zipfian skew. (C-D) Needle-and-thread skew. For (A) and (C), we vary the respective skew parameter
+\caption{Scenario \texttt{OneXr} simulations with skew in $P(FK)$. (A-B) Zipfian skew. (C-D) Needle-and-thread skew. For (A) and (C), we vary the respective skew parameter
 (Zipfian skew parameter and needle probability), while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$. For (B) and (D), we vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$,
 the Zipfian skew parameter to $2$ for (B), and the needle probability to $0.5$ for (D).
 }
@@ -478,7 +490,7 @@ the Zipfian skew parameter to $2$ for (B), and the needle probability to $0.5$ f
 
 \vspace{-1mm}
 \paragraph*{\textbf{Foreign Key Skew}}
-The regular OneXr scenario samples $FK$ uniformly randomly from $\mathcal{D}_{FK}$ (step 3 in the procedure). We now ask if a \textit{skew} in 
+The regular \texttt{OneXr} scenario samples $FK$ uniformly randomly from $\mathcal{D}_{FK}$ (step 3 in the procedure). We now ask if a \textit{skew} in 
 the distribution of $FK$ values could widen the gap between \textit{JoinAll} and \textit{NoJoin}. To study this scenario, we modify the data generation procedure slightly:
 in step 3, we sample $FK$ values with a Zipfian skew or a needle-and-thread skew. The Zipfian skew simply uses a Zipfian distribution for $P(FK)$ controlled by the Zipfian
 skew parameter. The needle-and-thread skew allocates a large probability mass (parameter $p$) to a single $FK$ value (the ``needle'') and uniformly distributes the rest of 
