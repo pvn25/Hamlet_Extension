@@ -328,7 +328,7 @@ Each dataset comes pre-split 50\%:25\%:25\% for training-validation-test. We ret
 We compare two approaches: \textit{JoinAll}, which joins all base tables to provide all features to the classifier (the current widespread practice), and \textit{NoJoin},
 which avoids all foreign features a priori (the approach we study). We compare them for both a decision tree (CART) and an SVM with RBF kernel. For decision trees, we 
 experiment with three popular split criteria: Gini, information gain, and gain ratio. We use the popular R packages ``rpart'' for the decision tree\footnote{For the gain 
-ratio, we used ``CORElearn'' package.} and ``e1071'' for the SVM. We use the validation set to perform hyper-parameter tuning using a standard grid search as follows:
+ratio, we used ``CORElearn'' package in R.} and ``e1071'' for the SVM. We use the validation set to perform hyper-parameter tuning using a standard grid search as follows:
 
 \textit{Decision Tree}: There are two hyper-parameters to tune: \textit{minsplit} and \textit{cp}. \textit{minsplit} is the number of observations that 
 must exist in a node for a split to be attempted. Any split that does not improve the fit by a factor of \textit{cp} is pruned off. 
@@ -384,7 +384,8 @@ $7$ of the dimension tables could be discarded without affecting accuracy signif
 needs six times fewer training examples and the RBF-SVM needs three times fewer training examples than linear models to avoid extra overfitting when discarding foreign features}! 
 This is counter-intuitive because conventional wisdom is that more complex ML models need more (not less) training examples to avoid extra overfitting.
 
-For an interesting comparison that we will use later on, we also present the results for a classical ``braindead'' classifier: 1-nearest neighbor~\cite{mitchellbook}.
+For an interesting comparison that we will use later on, we also present the results for a classical ``braindead'' classifier: 1-nearest neighbor~\cite{mitchellbook} (from
+package ``RWeka'' in R).
 Surprisingly, as Table~\ref{Table:RealTest} shows,  its accuracy is sometimes comparable to decision trees and RBF-SVMs! 
 More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a higher accuracy than with \textit{JoinAll}. We discuss this behavior further in Section 4.3.
 
