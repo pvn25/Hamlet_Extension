@@ -1,0 +1,29 @@
+library(RWeka)
+source("myfilter.R")
+
+MLtrain=read.csv("MLtrain_new.csv");
+MLtest=read.csv("MLtest_new.csv");
+MLhold=read.csv("MLhold_new.csv");=
+
+MLfull = rbind(MLtrain, MLtest, MLhold);
+MLtrain$movieid = factor(MLtrain$movieid, levels=levels(MLfull$movieid));
+MLtrain$userid = factor(MLtrain$userid, levels=levels(MLfull$userid));
+MLtrain$zipcode = factor(MLtrain$zipcode, levels=levels(MLfull$zipcode));
+
+MLtest$movieid = factor(MLtest$movieid, levels=levels(MLfull$movieid));
+MLtest$userid = factor(MLtest$userid, levels=levels(MLfull$userid));
+MLtest$zipcode = factor(MLtest$zipcode, levels=levels(MLfull$zipcode));
+
+MLhold$movieid = factor(MLhold$movieid, levels=levels(MLfull$movieid));
+MLhold$userid = factor(MLhold$userid, levels=levels(MLfull$userid));
+MLhold$zipcode = factor(MLhold$zipcode, levels=levels(MLfull$zipcode));
+
+
+
+fit <- IBk(rating ~ ., data = MLtrain, control = Weka_control(K = 1, X = TRUE))
+print(fit)
+predictions <- predict(fit, MLhold,class = "class")
+print(predictions)
+outsettab <- table(pred = predictions, true = MLhold[,1])
+acc = geterr(outsettab, '01', nrow(MLhold))
+print(acc)
