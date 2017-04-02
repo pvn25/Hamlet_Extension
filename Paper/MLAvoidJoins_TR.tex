@@ -1,0 +1,94 @@
+\documentclass[sigconf]{acmart}
+\settopmatter{printacmref=false} % Removes citation information below abstract
+\renewcommand
+\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
+\usepackage{booktabs} % For formal tables
+\usepackage{amsmath}
+\usepackage{graphicx,xspace,verbatim,comment}
+\usepackage{hyperref,array,color,balance,multirow}
+\usepackage{balance,float,url,amsfonts,alltt}
+\usepackage{mathtools,rotating,amsmath,amssymb}
+\usepackage{color,ifpdf,fancyvrb,array}
+% \usepackage{algorithm,algpseudocode}
+\usepackage{etoolbox,listings,subcaption}
+\usepackage{bigstrut,morefloats}
+%\usepackage[linesnumbered,boxruled]{algorithm2e}
+\usepackage[boxruled]{algorithm2e}
+\usepackage{pbox}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\newcommand{\eat}[1]{}
+\newcommand{\red}{\textcolor{red}}
+
+\newenvironment{packeditems}{
+\begin{itemize}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+\newenvironment{packedenums}{
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+
+\setcopyright{acmcopyright}
+% \setcopyright{rightsretained}
+
+\eat{
+\acmDOI{10.475/123_4}
+\acmISBN{123-4567-24-567/08/06}
+}
+\acmConference[KDD'17]{KDD Conference}{August 2017}{Halifax, Canada} 
+\acmYear{2017}
+\copyrightyear{2017}
+\acmPrice{15.00}
+
+\input{body}
+\section*{Appendix}
+\appendix
+\section{More Simulation Results}
+Figure presents some more key plots for the simulation scenario in which the true distribution is precisely captured using a lone feature $X_r \in \textbf{X}_R$. We sample examples similarly as per the procedure mentioned in section 4.1, except that the tuples of R are constructed by sampling only one $X_R$ value randomly and the remaining values in $X_R$ feature vector are obtained by repeating the same sampled value $d_R$ number of times.  With many \textit{FK} values, there are only a few $\textbf{X}_R$ tuples. Hence, by increasing the noise from foreign features, we increase the instances of model getting ``confused''. And we again ask the same question, whether such distribution could widen the gap between \textit{JoinAll} and \textit{NoJoin}. 
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\linewidth]{onexr_jerrydt.pdf}
+\vspace{-2mm}
+\caption{Scenario OneXr simulations with repeated Xr features for decision tree. (A) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 40, 4)$. (B) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 200, 4)$.}
+\label{Figure:OneXrjerry_dt}
+\vspace{-2mm}
+\end{figure}
+
+Figure \ref{Figure:OneXrjerry_dt} presents the results for the two experiments on decision trees where (A) maintains a high tuple ratio of 25x and (B) maintains a low tuple ratio of 5x. Once again, \textit{JoinAll} and \textit{NoJoin} exhibit similar errors in both the cases. Finally, we run this simulation scenario for both RBF-SVM (shown in Figure \ref{Figure:OneXrjerry_svm}) and 1-NN (shown in Figure \ref{Figure:OneXrjerry_1nn}). We found the trends to be similar as section 4.1. We see that for RBF-SVM, the error deviation happens at a tuple ratio of 5x. The 1-NN, as expected is less stable and the deviation happens even at a higher tuple ratio of 25x. With low tuple ratios, the absolute errors of \textit{JoinAll} and \textit{NoJoin} increases compared to \textit{NoFK} for all the cases as we note in Figure \ref{Figure:OneXrjerry_dt},\ref{Figure:OneXrjerry_svm},\ref{Figure:OneXrjerry_1nn} (B).
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\linewidth]{onexr_jerrysvm.pdf}
+\vspace{-2mm}
+\caption{Scenario OneXr simulations with same setup as Figure 7, except for SVM.}
+\label{Figure:OneXrjerry_svm}
+\vspace{-2mm}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\linewidth]{onexr_jerry1nn.pdf}
+\vspace{-2mm}
+\caption{Scenario OneXr simulations with same setup as Figure 7, except for 1-NN.}
+\label{Figure:OneXrjerry_1nn}
+\vspace{-2mm}
+\end{figure}
+\begin{table}[t]
+\centering
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{nn_table.pdf}
+\vspace{-8mm}
+\caption{Accuracy on real-world datasets with Neural Network}
+\label{Table:NeuralNet}
+\vspace{-7mm}
+\end{table}
+\section{Other ML Models: Neural Networks}
+We again compare the two approaches: \textit{JoinAll} and \textit{NoJoin} on the real datasets for Neural Networks. Each dataset is retained with 50\%:25\%:25\% training-validation-test split. We use popular neural network library keras and run it on top of tensorflow. The network architecture comprises of 2 hidden units with 256 and 64 neurons and rectified linear unit as an activation function. In order to allow penalties on layer parameters, we do $L_2$ norm regularization. We tune the regularization parameter with grid set as $\{ 10^{-4}, 10^{-3}, 10^{-2} \}$. We choose the popular adam's algorithm for stochastic optimization and tune the learning rate with grid set as $\{ 10^{-3}, 10^{-2}, 10^{-1} \}$. We present the final results in the table \ref{Table:NeuralNet}.
+
+Again, we observe that for all the datasets (even for Yelp!), the accuracy of the neural nets is comparable between \textit{JoinAll} and \textit{NoJoin}. Neural networks seems even more robust than other classifiers we saw before. Thus, we conclude that foreign features can be safely discarded most often times without affecting accuracy significantly for all the high capacity classifiers.
+\end{document}
