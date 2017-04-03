@@ -1,0 +1,145 @@
+\documentclass[sigconf]{acmart}
+\settopmatter{printacmref=false} % Removes citation information below abstract
+\renewcommand
+\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
+\usepackage{booktabs} % For formal tables
+\usepackage{amsmath}
+\usepackage{graphicx,xspace,verbatim,comment}
+\usepackage{hyperref,array,color,balance,multirow}
+\usepackage{balance,float,url,amsfonts,alltt}
+\usepackage{mathtools,rotating,amsmath,amssymb}
+\usepackage{color,ifpdf,fancyvrb,array}
+% \usepackage{algorithm,algpseudocode}
+\usepackage{etoolbox,listings,subcaption}
+\usepackage{bigstrut,morefloats}
+%\usepackage[linesnumbered,boxruled]{algorithm2e}
+\usepackage[boxruled]{algorithm2e}
+\usepackage{pbox}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\newcommand{\eat}[1]{}
+\newcommand{\red}{\textcolor{red}}
+
+\newenvironment{packeditems}{
+\begin{itemize}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{itemize}}
+
+\newenvironment{packedenums}{
+\begin{enumerate}
+  \setlength{\itemsep}{1pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+}{\end{enumerate}}
+
+\setcopyright{acmcopyright}
+% \setcopyright{rightsretained}
+
+\eat{
+\acmDOI{10.475/123_4}
+\acmISBN{123-4567-24-567/08/06}
+}
+\acmConference[KDD'17]{KDD Conference}{August 2017}{Halifax, Canada} 
+\acmYear{2017}
+\copyrightyear{2017}
+\acmPrice{15.00}
+
+\title{Stop That Join! Discarding Dimension Tables \\when Learning High Capacity Classifiers}
+
+\author{Vraj Shah}
+\affiliation{\institution{University of California, San Diego}}
+\email{vps002@eng.ucsd.edu}
+\author{Arun Kumar}
+\affiliation{\institution{University of California, San Diego}}
+\email{arunkk@eng.ucsd.edu}
+\author{Xiaojin Zhu}
+\affiliation{\institution{University of Wisconsin-Madison}}
+\email{jerryzhu@cs.wisc.edu}
+
+\begin{document}
+
+\begin{abstract}
+Many datasets have multiple tables connected by key-foreign key dependencies.
+Data scientists usually join all tables to bring in extra features from the so-called 
+dimension tables. Unlike the statistical relational learning setting, such joins do 
+not cause record duplications, which means regular IID models are typically used. Recent
+work demonstrated the possibility of using foreign key features as representatives for the 
+dimension tables' features and eliminating the latter a priori, potentially saving runtime
+and effort of data scientists. However, the prior work was restricted to linear models 
+and it established a dichotomy of when dimension tables are safe to discard due to extra
+overfitting caused by the use of foreign key features. In this work, we revisit that question 
+for two popular high capacity models: decision tree and SVM with RBF kernel. Our 
+extensive empirical and simulation-based analyses show that these two classifers are surprisingly and 
+counter-intuitively more robust to discarding dimension tables and face much \textit{less} extra overfitting 
+than linear models. We provide intuitive explanations for their behavior and identify new open 
+questions for further ML theoretical research. We also identify and resolve two key practical 
+bottlenecks in using foreign key features.
+\end{abstract}
+
+\maketitle
+
+\input{body}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{MLAvoidJoinsTR}
+
+\section*{Appendix}
+
+\appendix
+
+\section{More Simulation Results}
+
+We now discuss a new simulation scenario that extends the earlier OneXr scenario: the OneXrReplicated scenario. We sample examples in a way similar to the procedure described in Section 4.1, except that the tuples of \textbf{R} are constructed by sampling only one $\textbf{X}_R$ feature's value randomly, while the remaining feature values in $\textbf{X}_R$ are just repetitions of the same sampled value (so, $d_R$ identical feature values).  So, even if the number of $FK$ values is high, there are only $\textbf{X}_R$ values. Our hope is that by increasing the ``signal" from the foreign features this way, we increase the chance of the model getting relatively more ``confused" when using $FK$ as a representative. We ask the same question again, i.e., does this scenario widen the gap between \textit{JoinAll} and \textit{NoJoin}?
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\linewidth]{onexr_jerrydt.pdf}
+\vspace{-2mm}
+\caption{Scenario OneXrReplicated simulations with repeated Xr features for decision tree. (A) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 40, 4)$. (B) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 200, 4)$.}
+\label{Figure:OneXrjerry_dt}
+\vspace{-2mm}
+\end{figure}
+
+Figure~\ref{Figure:OneXrjerry_dt} presents the results for this scenario on decision trees in which (A) has a high tuple ratio of 25 and (B) has a low tuple ratio of 5. Once again, we see that \textit{JoinAll} and \textit{NoJoin} exhibit similar errors in both the cases. We also ran this scenario for both RBF-SVM, as shown in Figure~\ref{Figure:OneXrjerry_svm}) and 1-NN, as shown in Figure~\ref{Figure:OneXrjerry_1nn}.  Overall, the trends are similar to the results from Section 4.1. With the RBF-SVM, \textit{JoinAll} and \textit{NoJoin} exhibit a gap in errors when the low tuple ratio is 5 but not when it is 25. The 1-NN, as expected, is less stable event at the higher tuple ratio of 25. Finally, also note that when the tuple ratio is low (5), the absolute errors of \textit{JoinAll} and \textit{NoJoin} are both higher compared to \textit{NoFK} on all three classifiers, as shown by Figures~\ref{Figure:OneXrjerry_dt}(B),~\ref{Figure:OneXrjerry_svm}(B), and~\ref{Figure:OneXrjerry_1nn}(B).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\linewidth]{onexr_jerrysvm.pdf}
+\vspace{-2mm}
+\caption{Scenario OneXrReplicated simulations with same setup as Figure 7, except for RBF-SVM.}
+\label{Figure:OneXrjerry_svm}
+\vspace{-2mm}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.99\linewidth]{onexr_jerry1nn.pdf}
+\vspace{-2mm}
+\caption{Scenario OneXrReplicated simulations with same setup as Figure 7, except for 1-NN.}
+\label{Figure:OneXrjerry_1nn}
+\vspace{-2mm}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{nn_table.pdf}
+\vspace{-8mm}
+\caption{Accuracy on real-world datasets with a neural network.}
+\label{Table:NeuralNet}
+\vspace{-7mm}
+\end{table}
+
+\section{Other Classifiers: Neural Networks}
+
+Finally, we compare the two approaches \textit{JoinAll} and \textit{NoJoin} on the real datasets for a neural network (multi-layer perceptron). We follow the same methodology as before: each dataset is divided into 50\%:25\%:25\% training-validation-test splits. For this experiment, we use the popular neural network library Keras on top of TensorFlow. Our network architecture is as follows: 2 hidden layers with 256 neurons followed by 64 neurons and rectified linear unit (ReLU) as the activation function. In order to allow for penalties on the parameters, we include $L_2$ norm regularization. We tune the regularization parameter with a grid search with the following values: $\{ 10^{-4}, 10^{-3}, 10^{-2} \}$. We use the popular Adam optimizer available in TensorFlow for training and tune the learning rate with a grid search with the following values: $\{ 10^{-3}, 10^{-2}, 10^{-1} \}$. Table~\ref{Table:NeuralNet} presents the results.
+
+Once again, we see that across all datasets, surprisingly including Yelp, the accuracy of \textit{NoJoin} is comparable to \textit{JoinAll} (compare these 
+results with Table~\ref{Table:RealTrain} and Table~\ref{Table:RealTest}).
+Thus, even a two-layer neural network is comparably or more robust to avoiding KFK joins than the other high capacity classifiers!
+% Overall, we conclude that foreign features can be safely discarded in many case without affecting accuracy significantly for all of these high capacity classifiers.
+
+\end{document}
