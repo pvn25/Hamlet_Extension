@@ -36,7 +36,7 @@
 
 % \setcopyright{rightsretained}
 
-\title{Stop That Join! Discarding Dimension Tables \\when Learning High Capacity Classifiers}
+\title{Avoiding Joins When Learning High-Capacity Classifiers\\(Experiments and Analysis)}
 
 \numberofauthors{1}
 \author{
@@ -50,24 +50,34 @@
 \maketitle
 
 \begin{abstract}
-Many datasets have multiple tables connected by key-foreign key dependencies.
-Data scientists usually join all tables to bring in extra features from the so-called 
-dimension tables. Unlike the statistical relational learning setting, such joins do 
-not cause record duplications, which means regular IID models are typically used. Recent
-work demonstrated the possibility of using foreign key features as representatives for the 
-dimension tables' features and eliminating the latter a priori, potentially saving runtime
-and effort of data scientists. However, the prior work was restricted to linear models 
-and it established a dichotomy of when dimension tables are safe to discard due to extra
-overfitting caused by the use of foreign key features. In this work, we revisit that question 
-for two popular high capacity models: decision tree and SVM with RBF kernel. Our 
-extensive empirical and simulation-based analyses show that these two classifers are surprisingly and 
-counter-intuitively more robust to discarding dimension tables and face much \textit{less} extra overfitting 
-than linear models. We provide intuitive explanations for their behavior and identify new open 
-questions for further ML theoretical research. We also identify and resolve two key practical 
-bottlenecks in using foreign key features.
+Machine learning (ML) over relational data is a key focus area for the database industry and 
+academia. While a lot of work has focused on making ML faster and more
+scalable, little work has addressed the burden of \textit{sourcing} data and features for ML tasks. 
+In particular, real-world relational databases often have features spread across many tables 
+(often, dozens) and data scientists often struggle to obtain and join all possible tables before 
+even starting ML. In this context, Kumar et al.~showed recently that 
+key-foreign key dependencies (KFKDs) between tables lets us avoid entire tables before ML 
+without significantly affecting prediction accuracy. Their controversial notion of ``avoiding joins 
+safely" was eventually adopted by many data scientists to reduce the burden of data sourcing. 
+But their work applied only to simple linear classifiers. In this work, we verify if their results 
+hold true for three popular complex classifiers: decision trees, SVMs, and neural networks. We conduct an 
+extensive experimental study using both real-world datasets and simulations to analyze the 
+effects of KFKDs on such models. Our results show that these high-capacity classifiers are 
+surprisingly and counter-intuitively \textit{more} robust to avoiding joins compared to linear 
+models! We provide intuitive explanations for their behavior and identify open questions at the 
+intersection of database and ML theoretical research. We also identify and resolve two key 
+practical bottlenecks in using foreign keys as features for decision trees.
 \end{abstract}
 
 \section{Introduction}
+
+However, from conversations with data 
+scientists in practice, we learned that they often end up spending a bulk of their time on just
+\textit{data sourcing}--obtaining and curating relevant features for their ML tasks, even 
+before the training process can begin. Unfortunately, little work in our community has studied 
+how to exploit the fundamental properties of relational data and the behavior of ML models in 
+order to help reduce the burden of data sourcing.
+
 
 Real-world relational databases typically have many tables connected by \textit{database dependencies}~\cite{cowbook}. Thus, a common pre-processing step 
 performed by data scientists before building a machine learning (ML) model is to \textit{join} all tables they think might provide 
