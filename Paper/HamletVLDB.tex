@@ -73,64 +73,71 @@ download from \url{http://cseweb.ucsd.edu/~arunkk/hamlet}.
 
 \section{Introduction}
 The data management community has intensively studied how to integrate ML algorithms 
-with data systems (e.g.,~\cite{madlib,ore,bismarck,riot,longview}), how to scale ML 
-algorithms (e.g.,~\cite{dimmwitted,graphlab,mllib,graphlab}), and how to use database 
-ideas to support ML tasks (e.g.,~\cite{columbus,mlbase}).
+with data systems (e.g.,~\cite{madlib,ore,bismarck,riot}), how to scale ML 
+algorithms (e.g.,~\cite{systemml,graphlab}), and how to use database 
+ideas to support ML tasks (e.g.,~\cite{columbus2,mlbase}).
 However, little work has tackled the pains of \textit{sourcing} data for ML tasks in the first place,
-especially, how fundamental data properties affect end-to-end data sourcing workflows for ML 
-tasks in practice.
+especially, how fundamental data properties affect end-to-end data workflows for ML tasks~\cite{brainwash}.
 %
 In particular, real-world relational databases often have many tables connected by 
 \textit{database dependencies}~\cite{cowbook}. Thus, given an ML task, data scientists 
 almost always \textit{join} many tables because they prefer to obtain as many \textit{features} 
 as they can for their ML models~\cite{orion}. But from conversations with data scientists 
-at multiple enterprise and Web companies, we learned that even this simple process of procuring 
-tables for joins could be painful in practice because different tables are often 
+at multiple enterprise and Web companies, we learned that even this simple process of 
+procuring tables for joins could be painful in practice because different tables are often 
 ``owned" by different teams within a company and have different access restrictions. This 
-slows down the ML analytics lifecycle.
+slows down the ML analytics lifecycle. Furthermore, as recent reports of Google's production 
+ML systems explain, features and tables that yield marginal or no benefits could incur 
+high ``technical debt" that decreases code mangeability and increases overall costs~\cite{techdebt,googletutorial}.
 
 In this context, Kumar et al.~\cite{hamlet} showed that one can often omit procuring entire 
 tables by exploiting \textit{key foreign-key dependencies} (KFKDs) present in the database
 \textit{schema}. That is, one can often ignore an entire table without even looking at its 
-records, but crucially, do so without significantly affecting ML prediction accuracy. The 
-theoretical basis for this dramatic capability is that a KFK join creates a \textit{functional dependency} 
-(FD) between a \textit{foreign key feature} (present in the main table with the target for 
-prediction) and the dependent \textit{foreign features} brought in by the join.\footnote{While 
-KFKDs are not the same as FDs~\cite{avibook}, assuming features have ``closed" domains, 
-they behave essentially as FDs in the output of the join~\cite{hamlet}.}
+records, but crucially, do so without significantly affecting ML prediction accuracy. 
+The theoretical basis for this dramatic capability is that a KFK join creates a \textit{functional dependency} 
+(FD) between a \textit{foreign key feature} and the dependent \textit{foreign features} brought in 
+by joins.\footnote{While KFKDs are not the same as FDs~\cite{avibook}, assuming features have
+``closed" domains, they behave essentially as FDs in the output of the join~\cite{hamlet}.}
 
 \vspace{1mm}
 \noindent{\textbf{Example (based on~\cite{hamlet}).}}
-Consider a common ML classification task in enterprise domains: predicting \textit{customer 
+Consider a common classification task: predicting \textit{customer 
 churn}. The data scientist starts with the main table for training (simplified for exposition): 
 \texttt{Customers} (\underline{\texttt{CustomerID}}, \texttt{Churn}, \texttt{Gender}, \texttt{Age}, 
 \texttt{Employer}). \texttt{Churn} is the target, while \texttt{Gender}, \texttt{Age}, and
 \texttt{Employer} are features. So far, this is a standard classification task. 
 She then notices the table \texttt{Employers} (\underline{\texttt{Employer}}, \texttt{State}, 
 \texttt{Revenue}) in her database with extra features about customers' employers.
-\texttt{Customers}.\texttt{Employer} turns out to be a foreign key feature that connects these tables. 
-She joins both tables to bring in the foreign features (about employers) because she has a hunch that 
-customers employed by rich corporations in coastal states might be less likely to churn. She then tries 
-different ML classifiers, e.g., logistic regression or decision trees.
+\texttt{Customers}.\texttt{Employer} is thus a foreign key feature connecting these tables. 
+She joins the tables to bring in the foreign features (about employers) because she has a hunch that 
+customers employed by rich companies in coastal states might be less likely to churn. She then tries 
+different classifiers, e.g., logistic regression or decision trees.
 
-The theoretical analysis in~\cite{hamlet} established a fundamental dichotomy in the implication of a 
-KFKD/FD for the bias-variance trade-off in ML, which explains the accuracy behavior of ML 
-classifiers~\cite{hastie,shai}. Essentially, avoiding the join is unlikely to increase 
+The theoretical and empirical analysis in~\cite{hamlet} showed that it is possible in many cases
+to predict a priori if the features brought in by a KFK join are unlikely to improve accuracy. Thus,
+a data scientist can decide to ignore the join (i.e., ignore the foreign table), which reduces the data
+sourcing burden and incurs less technical debt.
+However,~\cite{hamlet} showed a dichotomy in how ``safe" a join is to avoid in terms of the bias-variance 
+trade-off for classifiers~\cite{hastie,shai}. Essentially, avoiding the join is unlikely to increase 
 the bias but it might significantly increase the variance, since foreign key features often have much larger 
-domains than any foreign feature. This means that avoiding a join could cause \textit{extra overfitting}.
-However, the significance of this potential extra overfitting depends on the so-called \textit{tuple ratio} 
-(ratio of the number of labeled customers to the number of employers), and it is mitigated when the 
-tuple ratio goes above a certain threshold, i.e., when there are ``enough" training examples per foreign key value. 
-For simple classifiers with linear VC dimensions, this threshold was about $20$. Many public real-world 
-datasets satisfied this threshold, which meant this idea of ``avoiding joins safely," could be validated 
-empirically. While initially controversial, this idea was eventually adopted by many data scientists, 
-including some at Facebook, LogicBlox, and MakeMyTrip, since it helped reduce the burden of data 
-sourcing and also reduced runtimes of ML tasks~\cite{perscomm}. However, the results 
-in~\cite{hamlet} were restricted to linear classifiers. In fact, their VC dimension-based analysis suggested 
-that the tuple ratio threshold for avoiding joins safely might be much higher for high-capacity non-linear classifiers.
+domains than any foreign feature. That is, avoiding a join could cause \textit{extra overfitting}.
+However, this extra overfitting virtually disappears as the relative number of training examples increases. 
+This was quantified in~\cite{hamlet} using the \textit{tuple ratio}; in our example, 
+it is the ratio of the number of labeled customers to the number of employers. When the tuple ratio goes
+above a certain VC dimension-specific threshold, the join becomes ``safe" to avoid. For simpler classifiers 
+with linear VC dimensions (e.g., logistic regression and Naive Bayes), this threshold is about $20$. Since 
+there were public real-world datasets that satisfied this threshold, this idea of ``avoiding joins safely," 
+could be empirically validated. 
+While initially controversial, this idea was eventually adopted by many data scientists, including some at 
+Facebook, LogicBlox, and MakeMyTrip~\cite{perscomm}. Since computing the tuple ratio only requires the 
+foreign table's cardinality, not the table itself, this idea can reduce the data sourcing burden and also ML 
+runtimes. However, the results in~\cite{hamlet} were restricted to linear classifiers. 
+In fact, their VC dimension-based analysis suggested that the tuple ratio thresholds might be too high 
+for complex non-linear classifiers, potentially rendering this idea of avoiding joins safely inapplicable to 
+such classifiers in practice.
 
 \textit{In this paper, we perform a comprehensive empirical and simulation study to verify (or refute) 
-the applicability of the idea of avoiding joins safely for three popular high capacity classifiers:
+the applicability of the idea of avoiding joins safely to three popular high capacity classifiers:
 decision trees, SVMs, and ANNs.}
 
 The natural expectation is that these complex models, some of which have infinite VC dimensions, might 
