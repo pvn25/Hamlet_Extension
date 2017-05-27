@@ -159,7 +159,7 @@ These results are in stark constrast to the results for linear classifiers.
 
 Our counter-intuitive results raise new research questions at the intersection of data management and ML theory.
 In particular, there is a need to formalize the effects of KFKDs/FDs on the behavior of decision trees, SVMs, and ANNs.
-As a step in this direction, we analyze their behavior and provide intuitive explanations.
+As a step in this direction, we analyze and intuitively explain the behavior of decision trees and SVMs.
 \eat{
 Essentially, we explain why RBF-SVMs with foreign key features behave somewhat like a 1-nearest neighbor classifier due to 
 the high dimensionality of foreign key features with one-hot encoding. 
@@ -170,7 +170,8 @@ We also discuss why decision trees are robust to operating with foreign key feat
 }
 Other open questions include the implications of more general database dependencies such as embedded multi-valued dependencies on 
 the behavior of such models and the implications of all database dependencies for other ML tasks such as regression and clustering.
-We believe that solving these fundamental questions could lead new analytics systems functionalities that make it easier to use ML.
+We believe that solving these fundamental questions could lead new analytics systems functionalities that make it easier to use ML
+for data analytics.
 
 \eat{
 We extend the worst-case simulation scenario for linear models by replicating the foreign feature that determines the target multiple times. The idea is to make a model that uses 
