@@ -64,7 +64,7 @@ for three popular complex classifiers: decision trees, SVMs, and ANNs. We conduc
 extensive experimental study using both real-world datasets and simulations to analyze the 
 effects of avoiding KFK joins on such models. Our results show that these high-capacity classifiers 
 are surprisingly and counter-intuitively \textit{more} robust to avoiding KFK joins compared to 
-linear classifiers, refuting an intuition from the prior work's analysis! We explain this behavior 
+linear classifiers, refuting an intuition from the prior work's analysis. We explain this behavior 
 intuitively and identify open questions at the intersection of data management and ML 
 theoretical research. All of our code and datasets are available for download from 
 \url{http://cseweb.ucsd.edu/~arunkk/hamlet}.
@@ -219,11 +219,12 @@ We discuss related prior work in Section 7 and conclude in Section 8.
 
 \subsection{Notation}
 The setting we focus on is the following: the dataset has a set of tables in the \textit{star schema} with KFK dependencies (KFKDs).
-Star schemas are ubiquitous in many applications~\cite{cowbook}.
+Star schemas are ubiquitous in many applications, including retail, insurance, Web security, and recommendation systems~\cite{cowbook,hamlet,orion}.
 The fact table, which has the target variable, is denoted \textbf{S}. It has the schema $\textbf{S}(\underline{SID},Y, \textbf{X}_S, FK_1, \dots, FK_q)$.
 A dimension table is denoted $\textbf{R}_i$ ($i = 1$ to $q$) and it has the schema $\textbf{R}_i(\underline{RID_i},\textbf{X}_{R_i})$.
 $Y$ is the target variable (class label), $\textbf{X}_S$ and $\textbf{X}_{R_i}$ are vectors (sequences) of features, $RID_i$ is the primary key
-of $\textbf{R}_i$, while $FK_i$ is a foreign key feature that refers to $\textbf{R}_i$. We call $\textbf{X}_S$ \textit{home} features and $\textbf{X}_{R_i}$ \textit{foreign} features.
+of $\textbf{R}_i$, while $FK_i$ is a foreign key feature that refers to $\textbf{R}_i$. 
+We call $\textbf{X}_S$ \textit{home} features and $\textbf{X}_{R_i}$ \textit{foreign} features.
 For ease of exposition, we also treat \textbf{X} as a \textit{set} of features since the order among features is immaterial in our setting.
 Let \textbf{T} denote the output of the projected equi-join (key-foreign key, or KFK for short) query that constructs the full training dataset by 
 \textit{concatenating} the features from all base tables: $\textbf{T} \leftarrow \pi(\textbf{R} \bowtie_{RID=FK} \textbf{S})$. In general, its schema is 
@@ -232,9 +233,8 @@ formulations do not distinguish between home features, foreign keys, and foreign
 denoted $n_S$ (resp.~$n_R$); the number of features in $\textbf{X}_S$ (resp.~$\textbf{X}_R$) is denoted $d_S$ (resp.~$d_R$). Without loss of generality, we
 assume that the join is not selective, which means $n_S$ is also the number of tuples in \textbf{T}. $\mathcal{D}_{FK}$ denotes the domain of $FK$ 
 and by definition, $|\mathcal{D}_{FK}| = n_R$. We call $\frac{n_S}{n_R}$ the \textit{tuple ratio}.
-\eat{\footnote{Note that this setting is 
-different from the statistical relational learning (SRL) setting in which the joins could violate the IID assumption because they are not KFK (labeled examples in \textbf{S}
-might get duplicated. KFK joins do not cause such repetitions.}}
+Note that our setting is different from the statistical relational learning (SRL) setting, which deals with joins that violate the IID 
+assumption and duplicate labeled examples from \textbf{S}~\cite{srlbook}. KFK joins do not cause such duplication.
 
 \eat{
 \paragraph*{Example}
@@ -248,21 +248,23 @@ because of a hunch that customers employed by rich corporations in coastal state
 }
 
 \subsection{Assumptions and Scope}
-For the sake of tractability, in this paper, we adopt some of the same assumptions as~\cite{hamlet}. In particular, we assume the features are 
-\textit{categorical} (nominal). Numeric features can be pre-discretized using standard techniques, e.g., unsupervised binning~\cite{mitchellbook}. 
-Interestingly, this assumption is implicitly unavoidable for $X_R$ due to the presence of the FD $FK \rightarrow X_R$. If binning is not done for 
-numeric feature in $X_R$, it ``behaves" as a categorical feature whose domain could be as large as $\mathcal{D}_{FK}$.
-We also focus on binary classification but our ideas can be easily applied to 
-multi-class targets as well. We assume that the foreign key features ($FK_i$) are not (primary) keys in the fact table, e.g., \texttt{Employer} does 
+For the sake of tractability, in this paper, we adopt some assumptions from~\cite{hamlet}. In particular, we assume the features are 
+\textit{categorical}. Numeric features can be discretized using standard techniques such as binning~\cite{mitchellbook}. 
+%Interestingly, this assumption is implicitly unavoidable for $X_R$ due to the presence of the FD $FK \rightarrow X_R$. If binning is not done for 
+%numeric feature in $X_R$, it ``behaves" as a categorical feature whose domain could be as large as $\mathcal{D}_{FK}$.
+We also focus on binary classification but our ideas can be easily applied to multi-class targets as well. 
+We assume that the foreign key features ($FK_i$) are not (primary) keys in the fact table, e.g., \texttt{Employer} does 
 not uniquely identify a customer.\footnote{Primary keys in the fact table are \textit{not} generalizable features, unlike foreign keys.}
-Finally, we also do not study the ``cold start'' issue because it is orthogonal to the focus of this paper~\cite{coldstart}. In other words, we assume that all features 
-have known finite domains, possibly including a special ``Others'' placeholder to temporarily handle hitherto unseen values. In our example, this means that both 
-\texttt{Employer} and \texttt{Gender} have known finite domains. In general, $FK_i$ can take values only from the given set of $\textbf{R}_i.RID_i$ values 
-(new $FK_i$ values are mapped to ``Others''). Since ML models are rebuilt periodically in practice, new information can then be added to expand feature domains. 
-We emphasize that our goal is \textit{not} to create new classification or feature selection algorithms, nor is to compare which algorithms yield lowest errors.
-Our goal is to expose and analyze how KFKDs/FDs enable us to dramatically discard foreign features a priori when learning two popular high capacity 
-classifiers: decision tree (CART), RBF-SVM.
-
+Finally, we also do not study the ``cold start'' issue because it is orthogonal to the focus of this paper~\cite{coldstart}. Thus, all features 
+have known finite domains, possibly including a special ``Others'' placeholder to temporarily handle hitherto unseen values. 
+In our example, this means that both \texttt{Employer} and \texttt{Gender} have known finite domains.
+In general, $FK_i$ can take values only from the given set of $\textbf{R}_i.RID_i$ values (new $FK_i$ values 
+are mapped to ``Others''). Since ML models are rebuilt periodically in practice, new information can then be added to expand feature domains. 
+We emphasize that our goal is \textit{not} to create new ML or feature selection algorithms, nor is to compare which algorithms yield 
+the best accuracy or runtime. Our goal is to expose and analyze how KFKDs/FDs enable us to dramatically discard foreign features a priori 
+when learning three popular high-capacity classifiers: decision trees (CART), SVM (with RBF kernel), and ANN (multi-layer perceptron with 
+two hidden layers). For comparisons and deeper analysis, we also present results for Naive Bayes with backward selection, logistic regression with
+L1 regularization, linear SVM, quadratic-kernel SVM, and the ``braindead" 1-nearest neighbor classifier.
 
 \begin{table}[t]
 \centering
@@ -284,7 +286,7 @@ for this paper by grouping ordinal targets into lower and upper halves (this cha
 The dataset statistics are provided in Table~\ref{Table:datastats}. 
 We briefly describe the task for each dataset and explain what the foreign features are. More details about their schemas, including the list 
 of all features are already in the public domain (listed in~\cite{hamlet}). 
-\textit{All of our datasets, scripts, and code will be made available on our project webpage\footnote{\url{http://cseweb.ucsd.edu/~arunkk/hamlet}} to make reproducibility easier.}
+\textit{All of our datasets, scripts, and code are available for download on our project webpage\footnote{\url{http://cseweb.ucsd.edu/~arunkk/hamlet}} to make reproducibility easier.}
 
 
 \begin{table*}[t]
