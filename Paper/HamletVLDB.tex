@@ -291,10 +291,24 @@ of all features are already in the public domain (listed in~\cite{hamlet}).
 
 \begin{table*}[t]
 \centering
-\includegraphics[width=0.99\linewidth]{table2.pdf}
-\caption{Holdout test accuracy on the real-world datasets.}
+\includegraphics[width=0.99\linewidth]{table2-1.pdf}
+\caption{Holdout test accuracy on the real-world datasets for Decision Tree and 1NN.}
 \label{Table:RealTest}
 \end{table*}
+
+\begin{table*}[t]
+\centering
+\includegraphics[width=0.99\linewidth]{table2-2.pdf}
+\caption{Holdout test accuracy on the real-world datasets for SVM and linear models.}
+\label{Table:RealTest}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\linewidth]{histogram.pdf}
+\caption{Run-time comparison}
+\label{Figure:runtime}
+\end{figure*}
 
 \textit{Walmart}: predict if department-wise sales will be high using past sales (fact table) joined with stores and weather/economic indicators (two dimension tables).
 \textit{Flights}: predict if a route is codeshared by using other routes (fact table) joined with airlines, source, and destination airports (three dimension tables).
@@ -482,6 +496,13 @@ The 1-NN, as expected, is far less stable and the deviation starts even at a tup
 \label{Figure:OneXr1nnSVMSimulation}
 \end{figure}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.99\linewidth]{variance.pdf}
+\caption{Scenario OneXr simulations variance plots for (A) 1-NN and (B) RBF-SVM.}
+\label{Figure:OneXr1nnSVMSimulationVariance}
+\end{figure}
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{skewfk_onexr.pdf}
@@ -536,11 +557,17 @@ Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \t
 
 \begin{table*}
 \centering
-\includegraphics[width=2\columnwidth]{table3.pdf}
+\includegraphics[width=2\columnwidth]{table3-1.pdf}
 \caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest}.}
 \label{Table:RealTrain}
 \end{table*}
 
+\begin{table*}
+\centering
+\includegraphics[width=2\columnwidth]{table3-2.pdf}
+\caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest}.}
+\label{Table:RealTrain}
+\end{table*}
 
 \subsection{Scenario RepOneXr}
 We now present results for a new simulation scenario in which the true distribution is precisely captured using a lone feature $X_r \in \textbf{X}_R$. We sample examples similarly as per the procedure mentioned earlier for OneXr, except that the tuples of $\textbf{R}$ will now be constructed by replicating the value of $X_r$ sampled for a tuple to create all the other features in $X_R$. That is, $X_R$ of an example is just the same value repeated $d_R$ times. Note that the FD $\textit{FK} \rightarrow X_R $ implies there are at least as many unique $FK$ values as $\textbf{X}_R$ values. Thus, by increasing the number of $FK$ values relative to $X_R$ values, we hope to increase the chance of the model getting ``confused'' with \textit{NoJoin}. Our goal is to see if this widens the gap between \textit{JoinAll} and \textit{NoJoin}.
