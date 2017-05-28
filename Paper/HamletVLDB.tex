@@ -596,7 +596,9 @@ Figure \ref{Figure:OneXrjerry_dt} presents the results for the two experiments o
 \end{figure}
 
 
-\section{Explanation and Open Theoretical Questions}
+\section{Analysis and Open Questions}
+
+\subsection{Explaining the Results}
 
 We now intuitively explain the surprising behavior of decision trees and RBF-SVM with \textit{NoJoin} vis-a-vis \textit{JoinAll}.
 We first ask: {Does \textit{NoJoin} compromise the ``generalization error''?} The generalization error is the difference of the test and train errors.
@@ -652,14 +654,23 @@ that even with just $3$ or $4$ training examples per $FK$ value, such issues get
 \paragraph*{Scenario RepeatedOneXr}
 }
 
+\subsection{Open Research Questions}
+
 While our intuitive explanations capture the fine-grained behavior of the decision tree and RBF-SVM with \textit{NoJoin} vis-a-vis \textit{JoinAll}, there are clearly many 
-open questions for deeper ML theoretical research. Is it possible to quantify the probability of wrong partitioning with a decision tree as a function of the properties of 
+open questions for more research. Is it possible to quantify the probability of wrong partitioning with a decision tree as a function of the properties of 
 the data? Is it possible to quantify the probability of mismatched examples being picked for the RBF-SVM as a similar function? Why does the theory of VC-dimensions predict 
 the opposite of the observed behavior with these models? How do we quantify their generalizability if memorization is allowable and what forms of memorization are allowable?
 Answering these questions would provide deeper insights into the effects of KFKDs and FDs on the generalizability and accuracy of such classifiers. It could also yield more 
 formal mechanisms to characterize when discarding foreign features is feasible beyond just looking at tuple ratios.
 
-\textbf{TODO: conditional FDs; partial avoidance; interaction with MVDs, EMVDs, JDs?}
+Looking further out, from a data management perspective, there are database dependencies that are more general than FDs: 
+embedded multi-valued dependencies (EMVDs) and join dependencies (JDs)~\cite{avibook}. How does the presence of such 
+database dependencies among features affect the behavior of ML models? There are also conditional FDs, which satisfy FD-like 
+constraints among subsets of the dataset~\cite{condfds}. How do such properties of the data distribution affect ML behavior?
+Finally, the axioms of FDs imply that foreign features can be divided into arbitrary subsets before being avoided, which opens 
+up a new trade-off space between fully avoiding a foreign table and fully using it. How do we quantify this trade-off and exploit it?
+Answering these questions could open up new connections between data management and ML theory and potentially lead to 
+new functionalities for ML systems.
 
 \section{Making FK Features Practical}
 
@@ -844,12 +855,13 @@ reduce the domains of foreign key features for decision trees are inspired by su
 \section{Conclusions and Future Work}
 We think it is high time for the data management community to look beyond just building faster 
 or scalable ML systems and help reduce the pains of data sourcing and feature engineering for ML. 
-Understanding how fundamental properties of data sources affect ML behavior is one promising 
-step in this direction. While the idea of avoiding joins safely has been adopted  in practice for 
+Understanding how fundamental properties of data sources, especially schema information, affect 
+ML behavior is one promising step in this direction. 
+While the idea of avoiding joins safely has been adopted  in practice for 
 linear classifiers, in this comprehensive experimental study, we show that it works even better for 
 popular high-capacity classifiers, which goes against the intuition that high-capacity classifiers 
 are typically more prone to overfitting. We hope that our results and analysis spur more discussions 
-and new research on theory and systems to simplify data sourcing for ML tasks.
+and new research on simplifying data sourcing for ML-based analytics.
 
 As for future work, we plan to analyze the implication of KFKDs/FDs on high capacity classifiers 
 from a learning theoretic perspective. Other avenues include understanding the effects of more 
