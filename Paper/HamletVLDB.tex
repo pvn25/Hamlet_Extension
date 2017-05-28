@@ -91,8 +91,9 @@ that features that yield marginal benefits incur high ``technical debt" that dec
 mangeability and increases costs~\cite{techdebt,googletutorial}.
 
 In this context, Kumar et al.~\cite{hamlet} showed that one can often omit entire tables by 
-exploiting KFKDs present in the database \textit{schema}. That is, one can ignore a table 
-without even looking at its contents, but crucially, do so without significantly affecting ML accuracy. 
+exploiting KFKDs in the database \textit{schema}. That is, one can ignore a table 
+without even looking at its contents (i.e., ``avoid the join"), but crucially, do so without 
+significantly affecting ML accuracy (i.e., ``safely"). 
 The basis for this dramatic capability is that a KFK join creates a \textit{functional dependency} 
 (FD) between a \textit{foreign key feature} and the \textit{foreign features} brought in by the 
 join.\footnote{While KFKDs are not the same as FDs~\cite{avibook}, assuming features have
@@ -112,17 +113,17 @@ She joins the tables to bring in the foreign features (about employers) because 
 customers employed by rich companies in coastal states might be less likely to churn. She then tries 
 different classifiers, e.g., logistic regression or decision trees.
 
-The analysis in~\cite{hamlet} revealed a dichotomy in how ``safe" it is to avoid a join from an accuracy
+The analysis in~\cite{hamlet} revealed a dichotomy in how safe it is to avoid a join from an accuracy
 standpoint: in terms of the bias-variance trade-off, avoiding a join is unlikely to increase bias but 
 it might significantly increase variance, since foreign key features often have larger domains than 
 foreign features. \textit{In simple terms, avoiding joins might cause extra overfitting}. 
 But this extra overfitting subsides with more training examples. 
 In~\cite{hamlet}, the \textit{tuple ratio} quantifies this behavior; in our example, it is the ratio of the 
 number of labeled customers to the number of employers. When the tuple ratio is above a certain VC 
-dimension-based threshold, we can ``safely avoid the join." 
+dimension-based threshold, we can safely avoid the join. 
 For simpler classifiers with linear VC dimensions (e.g., logistic regression and Naive 
 Bayes), this threshold was about $20$. Since there were public real-world datasets that satisfied this 
-threshold, this idea of ``avoiding joins safely," could be empirically validated. 
+threshold, this idea of avoiding joins safely could be empirically validated. 
 
 While initially controversial, the idea of avoiding joins safely has been adopted by many data scientists, 
 including at Facebook, LogicBlox, and MakeMyTrip~\cite{perscomm}. Based on the value of the 
@@ -134,23 +135,25 @@ non-linear classifiers, potentially rendering this idea of avoiding joins safely
 classifiers in practice.
 
 \textit{In this paper, we perform a comprehensive empirical and simulation study and analysis to 
-verify (or refute) the applicability of the idea of avoiding joins safely to three popular high capacity 
+verify (or refute) the applicability of the idea of avoiding joins safely to three popular high-capacity 
 classifiers: decision trees, SVMs, and ANNs.}
 
 The natural expectation is that these complex models, some with infinite VC dimensions, will likely face 
 larger extra overfitting by avoiding joins compared to linear classifiers. Surprisingly, our results 
 show that their behavior is the \textit{exact opposite}! We start by rerunning the experiments on the 
-real-world datasets with KFK joins from~\cite{hamlet} for these models. For the linear classifiers, the 
-KFK joins could be avoided in only about half of the cases and that too with the tuple ratio threshold of $20$. 
-But for these high capacity classifiers, we find that the joins can be 
-safely avoided in \textit{almost all cases} and that too with tuple ratio thresholds much lower than $20$. 
+real-world datasets with KFK joins from~\cite{hamlet} for these models.\footnote{But for simplicity 
+and ease of comparison of all the models, we binarize all classification tasks.} Irrespective of whether 
+we use linear classifiers or the higher-capacity classifiers, the same set of joins turn out to be safe to avoid.
+Furthermore, on the datasets that had joins that were not safe to avoid, the decrease in accuracy caused 
+by avoiding said joins (unsafely) was lower for the higher-capacity classifiers compared to the linear classifiers.
 In other words, \textit{our work refutes an intuition from the VC dimension-based analysis of~\cite{hamlet} 
-and shows that popular high capacity classifiers are counter-intuitively \textit{more} robust to avoiding joins 
-than linear classifiers, not less}.
+and shows that these popular high-capacity classifiers are counter-intuitively \textit{comparably} or 
+\textit{more} robust to avoiding joins than linear classifiers, not less}.
 
-To understand the above surprising behavior in depth, we conduct an in-depth Monte Carlo-style simulation study using a 
-decision tree, which was the most robust to avoiding joins. We generate data for a two-table KFK join 
-and embed various ``true'' distributions for the target. This includes a known ``worst-case'' scenario for avoiding joins with linear 
+To understand the above surprising behavior in depth, we conduct an in-depth Monte Carlo-style simulation study 
+to ``stress test" how safe it is to avoid the join. We use decision trees for the simulation study, since they were 
+the most robust to avoiding joins. We generate data for a two-table KFK join and embed various ``true'' distributions 
+for the target. This includes a known ``worst-case'' scenario for avoiding joins with linear 
 classifiers (i.e., the holdout test errors blow up)~\cite{hamlet}. We vary different properties of the data and the true distribution: 
 numbers of features in each base table, numbers of training examples, foreign key domain size, noise in the data, and foreign key skew. 
 In very few of these cases does avoiding the join cause the error to rise beyond $1\%$! Indeed, the only scenario where avoiding the join 
@@ -393,7 +396,7 @@ Almost every other dimension table can safely be discarded. A similar situation 
 Overall, of the $14$ dimension tables across the $7$ datasets that can potentially be discarded, we are able to discard $13$ for the decision tree, with 
 the tuple ratio threshold being about $3$x. For the SVM, we are able to discard $11$ of them, with the tuple ratio threshold being about $6$x.
 These results are surprising given the more conservative behavior seen on linear models in~\cite{hamlet}. For example, for both Naive Bayes and logistic regression, only 
-$7$ of the dimension tables could be discarded without affecting accuracy significantly, with the tuple ratio threshold being about $20$x. \textit{In other words, the decision tree
+$7$ of the dimension tables were deemed ``safe to avoid" in~\cite{hamlet}, with the tuple ratio threshold being about $20$x. \textit{In other words, the decision tree
 needs six times fewer training examples and the RBF-SVM needs three times fewer training examples than linear models to avoid extra overfitting when discarding foreign features}! 
 This is counter-intuitive because conventional wisdom is that more complex ML models need more (not less) training examples to avoid extra overfitting.
 
