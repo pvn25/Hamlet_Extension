@@ -346,10 +346,11 @@ The grid is set as follows: \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$ and $
 \textit{Movies} and\textit{Expedia} alone, we perform one more fine tuning step with $\gamma \in \{2^{-7}, 2^{-6},2^{-5}, 2^{-4}, 2^{-3}, 2^{-2},2^{-1}, 1,2, 2^{2}, 2^{3}\}$ to improve accuracy.}
 
 \vspace{2mm}
-\noindent \textit{Quad-SVM} \textbf{TODO}
-
+\noindent \textit{Quad-SVM}: We tune the same hyper-parameters \textit{C} and $\gamma$ in the Polynomial kernel with degree 2:
+$k(x_i,x_j) = (-\gamma \  x_i ^T \cdot x_j)^{degree}$. We use the same grid as RBF-SVM.
 \vspace{2mm}
-\noindent \textit{Lin-SVM} \textbf{TODO}
+
+\noindent \textit{Lin-SVM}: We only tune the \textit{C} hyper-parameter in the Linear kernel: $k(x_i,x_j) = x_i ^T \cdot x_j $, \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$.
 
 \vspace{2mm}
 \noindent \textit{ANN}: The network architecture comprises of 2 hidden units with 256 and 64 neurons and rectified linear unit as an activation function. In order to allow penalties on layer parameters, we do $L_2$ norm regularization. We tune the regularization parameter with grid set as $\{ 10^{-4}, 10^{-3}, 10^{-2} \}$. We choose the popular adam's algorithm for stochastic optimization and tune the learning rate with grid set as $\{ 10^{-3}, 10^{-2}, 10^{-1} \}$. 
@@ -405,12 +406,12 @@ package ``RWeka'' in R).
 Surprisingly, as Table~\ref{Table:RealTest} shows,  its accuracy is sometimes comparable to decision trees and RBF-SVMs! 
 More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a higher accuracy than with \textit{JoinAll}. We discuss this behavior further in Section 4.3.
 
-\begin{table}[t]
-\centering
-\includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{nn_table.pdf}
-\caption{Accuracy on real-world datasets with ANN.}
-\label{Table:NeuralNet}
-\end{table}
+% \begin{table}[t]
+% \centering
+% \includegraphics[width=\columnwidth,height=\textheight,keepaspectratio]{nn_table.pdf}
+% \caption{Accuracy on real-world datasets with ANN.}
+% \label{Table:NeuralNet}
+% \end{table}
 
 
 \subsubsection*{Runtimes}
