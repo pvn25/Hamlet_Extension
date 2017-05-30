@@ -296,20 +296,20 @@ of all features are already in the public domain (listed in~\cite{hamlet}).
 \centering
 \includegraphics[width=0.99\linewidth]{table2-1.pdf}
 \caption{Holdout test accuracy on the real-world datasets for Decision Tree and 1NN.}
-\label{Table:RealTest}
+\label{Table:RealTest1}
 \end{table*}
 
 \begin{table*}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{table2-2.pdf}
-\caption{Holdout test accuracy on the real-world datasets for SVM and linear models.}
-\label{Table:RealTest}
+\caption{Holdout test accuracy on the real-world datasets for SVM, ANN and linear models.}
+\label{Table:RealTest2}
 \end{table*}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\linewidth]{histogram.pdf}
-\caption{Run-time comparison}
+\caption{Run-time comparison on real-world data: Walmart (W), Expedia (E), Flights (F), Yelp (Y), Movies (M), LastFM (L) and Books (B)}
 \label{Figure:runtime}
 \end{figure*}
 
@@ -379,8 +379,8 @@ the accuracy of \textit{NoJoin} is significantly worse than \textit{JoinAll} on 
 Furthermore, for almost all datasets, \textit{NoFK} often has much lower accuracy than both \textit{JoinAll} and \textit{NoJoin}, which validates the importance 
 of foreign key features.
 Surprisingly, in some cases (e.g., Gini on \textit{Flights} and gain ratio on \textit{Books}), \textit{NoJoin} has even slightly higher accuracy than \textit{JoinAll}.
-The only dataset for the decision tree on which \textit{NoJoin} has a gap of at least $0.01$ with \textit{JoinAll} and has lower accuracy is \textit{Yelp}. 
-A similar behavior is seen on \textit{LastFM} and \textit{Books} as well for the SVM although the gap is smaller.
+The only dataset for the decision tree and ANN on which \textit{NoJoin} has a gap of at least $0.01$ with \textit{JoinAll} and has lower accuracy is \textit{Yelp}. 
+A similar behavior is seen on \textit{LastFM} and \textit{Books} as well for the RBF-SVM although the gap is smaller.
 These results represent our key counter-intuitive finding: KFK joins are \textit{safer to avoid} with such high capacity classifiers than with the linear models!
 Essentially, the extra overfitting caused by avoiding KFK joins is less pronounced with high capacity classifiers compared to linear models, which is rather surprising
 because the VC dimension-based analysis in~\cite{hamlet} suggested the exact opposite.
@@ -394,7 +394,7 @@ low.\footnote{Interestingly, the tuple ratio is similarly low ($2.6$) for $\text
 ratio seems to be a \textit{conservative} indicator: it can tell if an error is likely to rise but the error may not actually rise in some case.}
 Almost every other dimension table can safely be discarded. A similar situation arises for the SVM on \textit{Yelp}, as well as, \textit{LastFM}, and \textit{Books}. 
 
-Overall, of the $14$ dimension tables across the $7$ datasets that can potentially be discarded, we are able to discard $13$ for the decision tree, with 
+Overall, of the $14$ dimension tables across the $7$ datasets that can potentially be discarded, we are able to discard $13$ for the decision tree and ANN, with 
 the tuple ratio threshold being about $3$x. For the SVM, we are able to discard $11$ of them, with the tuple ratio threshold being about $6$x.
 These results are surprising given the more conservative behavior seen on linear models in~\cite{hamlet}. For example, for both Naive Bayes and logistic regression, only 
 $7$ of the dimension tables were deemed ``safe to avoid" in~\cite{hamlet}, with the tuple ratio threshold being about $20$x. \textit{In other words, the decision tree
@@ -415,8 +415,8 @@ More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a highe
 
 
 \subsubsection*{Runtimes}
-
-\textbf{TODO}
+For all the high capacity classifiers, we notice average runtime speedup of 2x for \textit{NoJoin} over \textit{JoinAll} . \textit{NoJoin} achieves the highest speedup of 3.6x and 6.2x on \textit{Movies} for decision tree and RBF-SVM respectively. And for ANN, \textit{LastFM} and Books dataset noticed the maximum speedup. The speedup for linear models are more significant. For example, \textit{movies} dataset yielded the highest speedup of 707x for naive bayes with backward feature selection and on \textit{LastFM} dataset the speedup is 20x for logistic regression with l1 regularizer.  
+\cite{Figure:runtime}
 
 \begin{figure*}[t]
 \centering
@@ -503,13 +503,13 @@ The 1-NN, as expected, is far less stable and the deviation starts even at a tup
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{variance.pdf}
-\caption{Scenario OneXr simulations variance plots for (A) 1-NN and (B) RBF-SVM.}
+\caption{Variance plots for (A) 1-NN and (B) RBF-SVM.}
 \label{Figure:OneXr1nnSVMSimulationVariance}
 \end{figure}
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=2\columnwidth,height=\textheight,keepaspectratio]{skewfk_onexr.pdf}
+\includegraphics[width=0.99\linewidth]{skewfk_onexr.pdf}
 \caption{Scenario \texttt{OneXr} simulations with skew in $P(FK)$. (A-B) Zipfian skew. (C-D) Needle-and-thread skew. For (A) and (C), we vary the respective skew parameter
 (Zipfian skew parameter and needle probability), while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$. For (B) and (D), we vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$,
 the Zipfian skew parameter to $2$ for (B), and the needle probability to $0.5$ for (D).
@@ -562,14 +562,14 @@ Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \t
 \begin{table*}
 \centering
 \includegraphics[width=2\columnwidth]{table3-1.pdf}
-\caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest}.}
+\caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest1}.}
 \label{Table:RealTrain}
 \end{table*}
 
 \begin{table*}
 \centering
 \includegraphics[width=2\columnwidth]{table3-2.pdf}
-\caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest}.}
+\caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest2}.}
 \label{Table:RealTrain}
 \end{table*}
 
