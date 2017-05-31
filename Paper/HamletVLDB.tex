@@ -459,22 +459,13 @@ A key benefit of avoiding KFK joins safely is that ML runtimes (including featur
 We now verify if this is the case for the high capacity classifiers as well. We compare the runtimes of the end-to-end execution of the ML training (including the 
 grid search) and testing for all models on all datasets.
 Due to space constraints, we only report Gini metric for the decision tree and the RBF kernel for the SVM; these were also the most robust to avoiding joins.
-<<<<<<< HEAD
 All experiments (except for ANN) were run on CloudLab, which offers free access to physical compute nodes for research \cite{ricci2014introducing}. We use a custom OpenStack profile running Ubuntu 14.10 with 40 Intel Xeon cores and 160GB of RAM.
 The ANN experiments were run on a commodity laptop with Nvidia GeForce GTX 1050 GPU, 16GB RAM and running Windows 10. The version of R used is 3.2.2 and the version of TensorFlow used is 1.1.0.
-=======
-\textcolor{red}{\textbf{TODO}: The experiments were run on a commodity laptop with Intel  XXX processor with XXX RAM and running OS XXX. 
-The version of R used is XXX and the version of TensorFlow used is XXX.}
->>>>>>> origin/master
 Figure~\ref{Figure:runtime} presents the results.
 
 For the high capacity classifiers, we noticed an average runtime speedup of about 2x for \textit{NoJoin} over \textit{JoinAll}.  The highest speedup was 
 achieved on the \textit{Movies} dataset: 3.6x for the decision tree and 6.2x for the RBF-SVM. As for the ANN, \textit{LastFM} reported the 
-<<<<<<< HEAD
 largest speedup of 2.53x. 
-=======
-\textcolor{red}{largest speedup of XXX: \textbf{TODO}}. 
->>>>>>> origin/master
 The speedup for the linear classifiers were more significant. For example, on \textit{Movies}, we saw a speedup of 707x for Naive Bayes, while on 
 \textit{LastFM}, we saw a speedup of 20x for logistic regression. Thus, these results corroborate the orders of magnitude speedup reported in~\cite{hamlet} 
 for Naive Bayes with backward selection.
