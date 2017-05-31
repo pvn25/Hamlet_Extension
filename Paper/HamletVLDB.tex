@@ -921,7 +921,14 @@ Unsupervised dimensionality reduction methods such as random hashing or PCA are 
 reduce the domains of foreign key features for decision trees are inspired by such methods.
 
 \paragraph*{Data Integration}
-TODO: More citations, discussions
+Integrating data and features from different sources for ML and data mining algorithms often requires applying and adapting techniques from
+the data integration literature~\cite{diforml,dibook}. These include integrating features from different data types in recommendation 
+systems~\cite{multitypefusion}, sensor fusion~\cite{sensorfusion}, dimensionality reduction during feature fusion~\cite{dimredfusion},
+and techniques to control data quality during data fusion~\cite{lunabdi}.
+Avoiding joins safely can be seen as one schema-based mechanism to reduce the integration burden by predicting a priori if a source table is unlikely 
+to improve ML accuracy. It is a major open challenge to devise similar mechanisms can be devised for other types of data sources, say, using other 
+forms of schema constraints, ontology information, and sampling. We hope our work spurs more research in this direction of exploiting ideas from data integration 
+to reduce the data sourcing burden for ML tasks.
 
 %\paragraph*{ML and Analytics Benchmarks}
 
@@ -939,12 +946,13 @@ popular high-capacity classifiers, which goes against the intuition that high-ca
 are typically more prone to overfitting. We hope that our results and analysis spur more discussions 
 and new research on simplifying data sourcing for ML-based analytics.
 
-As for future work, we plan to analyze the implication of KFKDs/FDs on high capacity classifiers 
-from a learning theoretic perspective. Other avenues include understanding the effects of more 
-general database dependencies on classifiers, the effects of all database dependencies on 
-regression and clustering models, and designing an automated ``advisor" for data sourcing for ML tasks.
+As for future work, we plan to formally analyze the effects of KFKDs/FDs on high capacity classifiers 
+from a learning theoretic perspective. Other interesting avenues for future work include understanding 
+the effects of more general database dependencies on classifiers, the effects of all database dependencies 
+on regression and clustering models, and designing an automated ``advisor" for data sourcing for ML 
+tasks, especially when there are heterogeneous data types and sources.
 
-%\pagebreak
+\pagebreak
 
 \bibliographystyle{abbrv}
 \bibliography{HamletVLDB}
