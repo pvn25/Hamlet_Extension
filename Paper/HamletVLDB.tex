@@ -906,7 +906,7 @@ This is essentially as a way of ``short-circuiting'' the feature selection proce
 the burden of sourcing the features in the place.
 The trade-off between feature redundancy and relevancy is well-studied~\cite{guyonbook,leiyu,daphnekoller}. The conventional wisdom is that even a feature that is 
 redundant might be highly relevant and hence, unavoidable in the mix~\cite{guyonbook}. Our work establishes, perhaps surprisingly, that this is \textit{not} the case 
-for foreign features; even if a foreign feature is highly relevant, it can be safely discarded in most practical cases for decision trees and RBF-SVMs.
+for foreign features; even if a foreign feature is highly relevant, it can be safely discarded in most practical cases for decision trees, RBF-SVMs, and ANNs.
 There is prior work on exploiting FDs in feature selection.
 \cite{approxfds} infers approximate FDs using the dataset instance and exploits them during feature selection, FOCUS~\cite{focus} is an 
 approach to bias the input and reduce the number of features by performing some computations over those features, while~\cite{consistencyfs} proposes
