@@ -237,7 +237,8 @@ denoted $n_S$ (resp.~$n_R$); the number of features in $\textbf{X}_S$ (resp.~$\t
 assume that the join is not selective, which means $n_S$ is also the number of tuples in \textbf{T}. $\mathcal{D}_{FK}$ denotes the domain of $FK$ 
 and by definition, $|\mathcal{D}_{FK}| = n_R$. We call $\frac{n_S}{n_R}$ the \textit{tuple ratio}.
 Note that our setting is different from the statistical relational learning (SRL) setting, which deals with joins that violate the IID 
-assumption and duplicate labeled examples from \textbf{S}~\cite{srlbook}. KFK joins do not cause such duplication.
+assumption and duplicate labeled examples from \textbf{S}~\cite{srlbook}. KFK joins do not cause such duplication and thus, regular IID models
+are typically used in this setting.
 
 \eat{
 \paragraph*{Example}
@@ -265,22 +266,26 @@ In general, $FK_i$ can take values only from the given set of $\textbf{R}_i.RID_
 are mapped to ``Others''). Since ML models are rebuilt periodically in practice, new information can then be added to expand feature domains. 
 We emphasize that our goal is \textit{not} to create new ML or feature selection algorithms, nor is to compare which algorithms yield 
 the best accuracy or runtime. Our goal is to expose and analyze how KFKDs/FDs enable us to dramatically discard foreign features a priori 
-when learning three popular high-capacity classifiers: decision trees (CART), SVM (with RBF kernel), and ANN (multi-layer perceptron with 
-two hidden layers). For comparisons and deeper analysis, we also present results for Naive Bayes with backward selection, logistic regression with
-L1 regularization, linear SVM, quadratic-kernel SVM, and the ``braindead" 1-nearest neighbor classifier.
+when learning three popular high-capacity classifiers: decision trees (CART), SVM (with RBF kernel and quadratic kernel), and ANN (multi-layer 
+perceptron with two hidden layers). For comparisons and deeper analysis, we also present results for Naive Bayes with backward selection, 
+logistic regression with L1 regularization, linear SVM, and the ``braindead" 1-nearest neighbor classifier.
 
 \begin{table}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{table1.pdf}
 \caption{Dataset statistics. $q$ is the number of dimension tables. All features are categorical. $n_S$ is the number of labeled examples, also 
-overloaded to mean the number of training examples ($50\%$ as many). So, the tuple ratio here is actually $50\% \times n_S / n_R$. N/A means the 
-corresponding dimension table can never be discarded because its corresponding foreign key has an ``open'' domain.
+overloaded to mean the number of training examples ($50\%$ as many). So, the tuple ratio listed is actually $50\% \times n_S / n_R$. N/A means the 
+corresponding dimension table can never be discarded because its corresponding foreign key has an ``open'' domain and can never be used as a feature.
 }
 \label{Table:datastats}
 \end{table}
 
 
 \section{Empirical Study with Real Data}
+
+We now present our detailed empirical study using real-world datasets on 10 classifiers, including 6 high-capacity classifiers (decision tree with gini, 
+information gain, and gain ratio; SVM with RBF and quadratic kernels), 3 linear classifiers (Naive Bayes with backward selection, logistic regression with
+L1 regularization, and linear SVM), and the braindead 1-nearest neighbor.
 
 \subsection{Datasets}
 We take the seven real datasets from~\cite{hamlet}; these are originally from Kaggle, GroupLens, \url{openflights.org}, \url{mtg.upf.edu/node/1671}, and \url{last.fm}.
@@ -289,74 +294,92 @@ for this paper by grouping ordinal targets into lower and upper halves (this cha
 The dataset statistics are provided in Table~\ref{Table:datastats}. 
 We briefly describe the task for each dataset and explain what the foreign features are. More details about their schemas, including the list 
 of all features are already in the public domain (listed in~\cite{hamlet}). 
-\textit{All of our datasets, scripts, and code are available for download on our project webpage\footnote{\url{http://cseweb.ucsd.edu/~arunkk/hamlet}} to make reproducibility easier.}
+\textit{All of our datasets, scripts, and code are available for download on our project webpage\footnote{\url{http://cseweb.ucsd.edu/~arunkk/hamlet}} 
+to make reproducibility easier.}
 
 
 \begin{table*}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{table2-1.pdf}
-\caption{Holdout test accuracy on the real-world datasets for Decision Tree and 1NN.}
+\caption{Holdout test accuracy on the real-world datasets for the decision trees and 1-NN.}
 \label{Table:RealTest1}
 \end{table*}
 
 \begin{table*}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{table2-2.pdf}
-\caption{Holdout test accuracy on the real-world datasets for SVM, ANN and linear models.}
+\caption{Holdout test accuracy on the real-world datasets for the SVMs, ANN, and linear models.}
 \label{Table:RealTest2}
 \end{table*}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\linewidth]{histogram.pdf}
-\caption{Run-time comparison on real-world data: Walmart (W), Expedia (E), Flights (F), Yelp (Y), Movies (M), LastFM (L) and Books (B)}
-\label{Figure:runtime}
-\end{figure*}
 
+\vspace{1mm}
 \textit{Walmart}: predict if department-wise sales will be high using past sales (fact table) joined with stores and weather/economic indicators (two dimension tables).
+
+\vspace{1mm}
 \textit{Flights}: predict if a route is codeshared by using other routes (fact table) joined with airlines, source, and destination airports (three dimension tables).
+
+\vspace{1mm}
 \textit{Yelp}: predict if a business will be rated highly using past ratings (fact table) joined with users and businesses (two dimension tables).
+
+\vspace{1mm}
 \textit{MovieLens}: predict if a movie will be rated highly using past ratings (fact table) joined with users and movies (two dimension tables).
-\textit{Expedia}: predict if a hotel will be ranked highly using past search listings (fact table) joined with hotels and search events (two dimension tables but one foreign key has an 
-``open'' domain, i.e., past values will not be seen in the future, and hence cannot be used).
+
+\vspace{1mm}
+\textit{Expedia}: predict if a hotel will be ranked highly using past search listings (fact table) joined with hotels and search events (two dimension tables 
+but one foreign key, viz., the search ID, has an ``open'' domain, i.e., past values will not be seen in the future, which makes it unusable as a feature).
+
+\vspace{1mm}
 \textit{LastFM}: predict if a song will be played often using past play level information (fact table) joined with users and artists (two dimension tables).
-\textit{Books}: if a book will be rated highly using past ratings (fact table) joined with readers and books (two dimension tables).
+
+\vspace{1mm}
+\textit{Books}: predict if a book will be rated highly using past ratings (fact table) joined with readers and books (two dimension tables).
 
 \subsection{Methodology}
-Each dataset comes pre-split 50\%:25\%:25\% for training-validation-test. We retain the splits as is.
+Each dataset is pre-split 50\%:25\%:25\% for training, validation (during feature selection and hyper-parameter tuning), and holdout testing. We retain the splits as is.
 We compare two approaches: \textit{JoinAll}, which joins all base tables to provide all features to the classifier (the current widespread practice), and \textit{NoJoin},
-which avoids all foreign features a priori (the approach we study). We compare them for decision trees (CART), SVMs, and ANN. We also report results with the two 
-linear models discussed in prior work~\cite{hamlet} for a quick comparison: Naive Bayes and Logistic Regression.
-For the decision trees, we consider all three popular split criteria: Gini, information gain, and gain ratio.
-For the SVMs, we consider three popular kernels: RBF, quadratic, and linear.
-We use the popular R packages ``rpart'' for the decision tree\footnote{For the gain 
-ratio, we used ``CORElearn'' package in R.} and ``e1071'' for the SVM.  For the ANN, we use the popular Python library Keras on top of TensorFlow.
-For Naive Bayes, we use the code from~\cite{hamlet}, while for logistic regression with L1 regularization, we use the popular R package ``glmnet."
-We use the validation set to perform hyper-parameter tuning using a standard grid search for each model as described in detail below. Note that 
-for Naive Bayes, there is no hyper-parameter tuning, while for logistic regression, the package performs automatic tuning internally.
+which avoids all foreign features a priori (the approach we study). We compare these two approaches for all the 10 classifiers mentioned earlier. For additional insights, 
+we also include a third approach for the decision trees: \textit{NoFK}, which is essentially the same as  \textit{JoinAll} but with all foreign key features dropped a priori.
+We used the popular R packages ``rpart'' for the decision trees\footnote{Except for the gain ratio case for which we used the ``CORElearn'' package in R.} 
+and ``e1071'' for the SVMs.  For the ANNs, we used the popular Python library Keras on top of TensorFlow.
+For Naive Bayes, we used the code from~\cite{hamlet}, while for logistic regression with L1 regularization, we used the popular R package ``glmnet."
+We use the validation set for hyper-parameter tuning using a standard grid search for each classifier with the grids described in detail below. Note that 
+for Naive Bayes, there is no hyper-parameter tuning.
 
 \vspace{2mm}
-\noindent \textit{Decision Tree}: There are two hyper-parameters to tune: \textit{minsplit} and \textit{cp}. \textit{minsplit} is the number of observations that 
+\textit{Decision Trees}: There are two hyper-parameters to tune: \textit{minsplit} and \textit{cp}. \textit{minsplit} is the number of observations that 
 must exist in a node for a split to be attempted. Any split that does not improve the fit by a factor of \textit{cp} is pruned off. 
 The grid is set as follows: \textit{minsplit} $\in \{ 1, 10, 100, 10^3\}$ and \textit{cp} $\in \{10^{-4}, 10^{-3}, 0.01, 0.1, 0\}$   
 
 \vspace{2mm}
-\noindent \textit{RBF-SVM}: There are two hyper-parameters to tune: \textit{C} and $\gamma$. \textit{C} controls the cost of misclassification, while $\gamma > 0$ controls the bandwidth in the Gaussian kernel (given two data points $x_i$ and $x_j$): $k(x_i,x_j) = \exp(-\gamma \cdot \lVert{x_i - x_j} \rVert ^2 )$.
+\textit{RBF-SVM}: There are two hyper-parameters to tune: \textit{C} and $\gamma$. 
+\textit{C} controls the cost of misclassification. $\gamma > 0$ controls the bandwidth in the Gaussian kernel 
+(given two data points $x_i$ and $x_j$): $k(x_i,x_j) = \exp(-\gamma \cdot \lVert{x_i - x_j} \rVert ^2 )$.
 The grid is set as follows: \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$ and $\gamma \in \{10^{-4}, 10^{-3}, 0.01, 0.1, 1, 10\}$.\footnote{On 
-\textit{Movies} and\textit{Expedia} alone, we perform one more fine tuning step with $\gamma \in \{2^{-7}, 2^{-6},2^{-5}, 2^{-4}, 2^{-3}, 2^{-2},2^{-1}, 1,2, 2^{2}, 2^{3}\}$ to improve accuracy.}
+\textit{Movies} and \textit{Expedia} alone, we perform an extra fine tuning step with 
+$\gamma \in \{2^{-7}, 2^{-6},2^{-5}, 2^{-4}, 2^{-3}, 2^{-2},2^{-1}, 1,2, 2^{2}, 2^{3}\}$ to improve accuracy.}
 
 \vspace{2mm}
-\noindent \textit{Quad-SVM}: We tune the same hyper-parameters \textit{C} and $\gamma$ in the Polynomial kernel with degree 2:
+\textit{Quadratic-SVM}: We tune the same hyper-parameters \textit{C} and $\gamma$ for the polynomial kernel of degree 2:
 $k(x_i,x_j) = (-\gamma \  x_i ^T \cdot x_j)^{degree}$. We use the same grid as RBF-SVM.
 \vspace{2mm}
 
-\noindent \textit{Lin-SVM}: We only tune the \textit{C} hyper-parameter in the Linear kernel: $k(x_i,x_j) = x_i ^T \cdot x_j $, \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$.
+\textit{Linear-SVM}: We tune the \textit{C} hyper-parameter for the linear kernel: 
+$k(x_i,x_j) = x_i ^T \cdot x_j $, \textit{C} $\in \{10^{-1}, 1, 10, 100, 10^3\}$.
 
 \vspace{2mm}
-\noindent \textit{ANN}: The network architecture comprises of 2 hidden units with 256 and 64 neurons and rectified linear unit as an activation function. In order to allow penalties on layer parameters, we do $L_2$ norm regularization. We tune the regularization parameter with grid set as $\{ 10^{-4}, 10^{-3}, 10^{-2} \}$. We choose the popular adam's algorithm for stochastic optimization and tune the learning rate with grid set as $\{ 10^{-3}, 10^{-2}, 10^{-1} \}$. 
+\textit{ANN}: The multi-layer perceptron architecture comprises of 2 hidden units with 256 and 64 neurons respectively. 
+Rectified linear unit (ReLU) is used as the activation function. In order to allow penalties on layer parameters, we do $L_2$ regularization, with 
+the regularization parameter tuned using the following grid axis: $\{ 10^{-4}, 10^{-3}, 10^{-2} \}$. We choose the popular Adam stochastic 
+gradient optimization algorithm~\cite{adam} with the learning rate tuned using the following grid axis:  $\{ 10^{-3}, 10^{-2}, 10^{-1} \}$. 
+The other hyper-parameters of the Adam algorithm used the default values.
 
-For additional insights, we also include a third approach for the decision tree: \textit{NoFK}, which is simply \textit{JoinAll} but with the foreign keys dropped a priori.
-Table~\ref{Table:RealTest1} presents the results.
+\vspace{2mm}
+\textit{Logistic Regression}: The glmnet package performs automatic hyper-parameter tuning for the L1 regularizer, as well as the optimization algorithm.
+However, it has three parameters to specify a desired convergence threshold and a limit on the execution time: \textit{nlambda}, which we set to 100,
+\textit{maxit}, which we set to 10000, and \textit{thresh}, which we set to 0.001.
+
+Table~\ref{Table:RealTest1} presents the holdout test accuracy results for all the models on all the datasets.
 %We present the final results in the table \ref{Table:NeuralNet}.
 
 \begin{table}[t]
@@ -372,39 +395,50 @@ No R1,R2: 0.8488 \quad No R1,R3: 0.8481 \quad No R2,R3: 0.8519
 
 \subsection{Results}
 
+\vspace{-1mm}
 \subsubsection*{Accuracy}
-Our first and most important observation is that for almost all the datasets (\textit{Yelp} being the exception) and for all three split criteria, the accuracy of the decision tree 
-is comparable between \textit{JoinAll} and \textit{NoJoin}. The trend is virtually the same for the RBF-SVM and ANN as well! In stark contrast, 
-the accuracy of \textit{NoJoin} is significantly worse than \textit{JoinAll} on more datasets with the linear models: linear SVM, logistic regression, and Naive Bayes.
-Furthermore, for almost all datasets, \textit{NoFK} often has much lower accuracy than both \textit{JoinAll} and \textit{NoJoin}, which validates the importance 
-of foreign key features.
-Surprisingly, in some cases (e.g., Gini on \textit{Flights} and gain ratio on \textit{Books}), \textit{NoJoin} has even slightly higher accuracy than \textit{JoinAll}.
-The only dataset for the decision tree and ANN on which \textit{NoJoin} has a gap of at least $0.01$ with \textit{JoinAll} and has lower accuracy is \textit{Yelp}. 
-A similar behavior is seen on \textit{LastFM} and \textit{Books} as well for the RBF-SVM although the gap is smaller.
-These results represent our key counter-intuitive finding: KFK joins are \textit{safer to avoid} with such high capacity classifiers than with the linear models!
-Essentially, the extra overfitting caused by avoiding KFK joins is less pronounced with high capacity classifiers compared to linear models, which is rather surprising
-because the VC dimension-based analysis in~\cite{hamlet} suggested the exact opposite.
+Our first and most important observation is that for almost all the datasets (\textit{Yelp} being the exception) and for all three split criteria, the accuracy of the decision 
+tree is comparable (a gap of within 1\%) between \textit{JoinAll} and \textit{NoJoin}. The trend is virtually the same for the RBF-SVM and ANN as well. 
+We also observe that the trend is virtually the same for the linear models as well! Thus, regardless of whether our classifier is linear or higher capacity, the relative 
+behavior of \textit{NoJoin} vis-a-vis \textit{JoinAll} is virtually the same. 
+In other words, these results represent out key counter-intuitive finding: joins are no less safe to avoid with the high capacity classifiers than with the 
+linear classifiers. The absolute accuracy of the high capacity classifiers is often significantly higher than the linear classifiers, which is as expected but is 
+also orthogonal and irrelevant to this paper's focus.
+Interestingly, on the \textit{Yelp} dataset, in which both joins are known to be \textit{not} safe to avoid with the linear classifiers~\cite{hamlet}, \textit{NoJoin} 
+correctly sees a large reduction in accuracy from \textit{JoinAll}--about $0.03$. 
+However, the drop in accuracy is smaller for the high capacity classifiers, e.g., the RBF-SVM, Gini decision tree, and ANN all see a drop of only about $0.01$!
+This suggests that these high capacity classifiers are sometimes counter-intuitively \textit{more} robust than linear classifiers to avoiding joins.
 
-To understand the accuracy results more deeply, we conduct a ``robustness'' experiment by discarding dimension tables one at a time instead of all at a time.
-Table~\ref{Table:robustness} presents this experiment's results for the decision tree with Gini.
+As for \textit{NoFK}, it often has much lower accuracy than both \textit{JoinAll} and \textit{NoJoin} on all three forms of decision trees. For example, on 
+\textit{Flights}, the drop is about $0.05$. This reaffirms the importance of foreign key features; as such, it is known that dropping foreign key features could 
+cause the bias to shoot up with linear classifiers~\cite{hamlet}. A similar scenario arises for the high capacity classifiers too.
+Interestingly, in some cases (e.g., Gini on \textit{Flights} and gain ratio on \textit{Books}), \textit{NoJoin} has marginally higher accuracy than \textit{JoinAll}.
+
+To understand the above accuracy results more deeply, we conduct a ``robustness'' experiment by discarding dimension tables one at a time instead of all together. 
+Table~\ref{Table:robustness} presents this experiment's results for the Gini decision tree.
 Discarding each dimension table one at a time (and also two at a time in the case of \textit{Flights}) did not differ much from \textit{NoJoin}, except for \textit{Yelp}.
-On \textit{Yelp}, the accuracy drops only when $\textbf{R}_2$ (users table) is dropped. From Table~\ref{Table:datastats}, we find that the tuple ratio for $\textbf{R}_2$ in 
-\textit{Yelp} is extremely low: $2.5$. So, there are not enough training examples per unique foreign key value for $\textbf{R}_2$ in \textit{Yelp}, i.e., its tuple ratio is too 
-low.\footnote{Interestingly, the tuple ratio is similarly low ($2.6$) for $\textbf{R}_2$ in \textit{Books} but the error of \textit{NoJoin} is not much higher. So, the tuple 
-ratio seems to be a \textit{conservative} indicator: it can tell if an error is likely to rise but the error may not actually rise in some case.}
-Almost every other dimension table can safely be discarded. A similar situation arises for the SVM on \textit{Yelp}, as well as, \textit{LastFM}, and \textit{Books}. 
+On \textit{Yelp}, the accuracy drops only when $\textbf{R}_2$ (users table) is dropped. 
+From Table~\ref{Table:datastats}, we find that the tuple ratio for $\textbf{R}_2$ in \textit{Yelp} is extremely low: $2.5$. 
+That is, there are not enough training examples per unique foreign key value for $\textbf{R}_2$ in \textit{Yelp}.\footnote{Interestingly, 
+the tuple ratio is similarly low ($2.6$) for $\textbf{R}_2$ in \textit{Books} but the error of \textit{NoJoin} is not much higher. So, the tuple 
+ratio seems to be a \textit{conservative} indicator: it can tell if an error is likely to rise but the error may not actually rise in some cases.}
+Almost every other dimension table can safely be discarded. A similar situation arises for the ANN on \textit{Yelp} and for the
+ RBF-SVM on \textit{Yelp}, \textit{LastFM}, and \textit{Books}. 
 
-Overall, of the $14$ dimension tables across the $7$ datasets that can potentially be discarded, we are able to discard $13$ for the decision tree and ANN, with 
-the tuple ratio threshold being about $3$x. For the SVM, we are able to discard $11$ of them, with the tuple ratio threshold being about $6$x.
-These results are surprising given the more conservative behavior seen on linear models in~\cite{hamlet}. For example, for both Naive Bayes and logistic regression, only 
-$7$ of the dimension tables were deemed ``safe to avoid" in~\cite{hamlet}, with the tuple ratio threshold being about $20$x. \textit{In other words, the decision tree
-needs six times fewer training examples and the RBF-SVM needs three times fewer training examples than linear models to avoid extra overfitting when discarding foreign features}! 
-This is counter-intuitive because conventional wisdom is that more complex ML models need more (not less) training examples to avoid extra overfitting.
+Overall, out of $14$ dimension tables across the $7$ datasets that can potentially be discarded, we were able to safely discard $13$ for the 
+decision tree and ANN, with the tuple ratio threshold being only about $3$x. For the RBF-SVM, we were able to discard $11$ dimension tables, 
+with the tuple ratio threshold being about $6$x.
+These results are surprising given the more conservative behavior predicted even for the linear classifiers in~\cite{hamlet}. For both Naive Bayes 
+and logistic regression, only $7$ of the dimension tables were deemed ``safe to avoid" with the tuple ratio threshold being about $20$x. 
+But of course, even tables that were predicted not safe to avoid could have been avoided without lowering accuracy significantly.
+\textit{Overall, we see that the decision trees and ANN need six times \textit{fewer} training examples and the RBF-SVM needs three times fewer 
+training examples than linear classifiers to avoid extra overfitting when avoiding the joins.} These results are counter-intuitive because conventional 
+wisdom holds that such complex models need more (not fewer) training examples to avoid extra overfitting.
 
-For an interesting comparison that we will use later on, we also present the results for a classical ``braindead'' classifier: 1-nearest neighbor~\cite{mitchellbook} (from
-package ``RWeka'' in R).
-Surprisingly, as Table~\ref{Table:RealTest1} shows,  its accuracy is sometimes comparable to decision trees and RBF-SVMs! 
-More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a higher accuracy than with \textit{JoinAll}. We discuss this behavior further in Section 4.3.
+For an interesting comparison that we will use later on in Section 5, we also present the results for 1-NN (from package ``RWeka'' in R; it has no 
+hyper-parameters). Surprisingly, as Table~\ref{Table:RealTest1} shows, the accuracy of even this braindead classifiers is sometimes comparable to 
+decision trees and RBF-SVMs! More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a higher accuracy than with \textit{JoinAll}. 
+We discuss this behavior further in Section 5.
 
 % \begin{table}[t]
 % \centering
@@ -413,15 +447,35 @@ More importantly, on most of the datasets, 1-NN with \textit{NoJoin} has a highe
 % \label{Table:NeuralNet}
 % \end{table}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\linewidth]{histogram.pdf}
+\caption{End-to-end runtimes on the real-world datasets: Walmart (W), Expedia (E), Flights (F), Yelp (Y), Movies (M), LastFM (L) and Books (B).}
+\label{Figure:runtime}
+\end{figure*}
 
 \subsubsection*{Runtimes}
-For all the high capacity classifiers, we notice average runtime speedup of 2x for \textit{NoJoin} over \textit{JoinAll} as shown in Figure \ref{Figure:runtime}. \textit{NoJoin} achieves the highest speedup of 3.6x and 6.2x on \textit{Movies} for decision tree and RBF-SVM respectively. And for ANN, \textit{LastFM} and Books dataset noticed the maximum speedup. The speedup for linear models are more significant. For example, \textit{movies} dataset yielded the highest speedup of 707x for naive bayes with backward feature selection and on \textit{LastFM} dataset the speedup is 20x for logistic regression with l1 regularizer.  
+A key benefit of avoiding KFK joins safely is that ML runtimes (including feature selection) could be significantly lowered for the linear classifiers~\cite{hamlet}.
+We now verify if this is the case for the high capacity classifiers as well. We compare the runtimes of the end-to-end execution of the ML training (including the 
+grid search) and testing for all models on all datasets.
+Due to space constraints, we only report Gini metric for the decision tree and the RBF kernel for the SVM; these were also the most robust to avoiding joins.
+All experiments (except for ANN) were run on CloudLab, which offers free access to physical compute nodes for research \cite{ricci2014introducing}. We use a custom OpenStack profile running Ubuntu 14.10 with 40 Intel Xeon cores and 160GB of RAM.
+The ANN experiments were run on a commodity laptop with Nvidia GeForce GTX 1050 GPU, 16GB RAM and running Windows 10. The version of R used is 3.2.2 and the version of TensorFlow used is 1.1.0.
+Figure~\ref{Figure:runtime} presents the results.
+
+For the high capacity classifiers, we noticed an average runtime speedup of about 2x for \textit{NoJoin} over \textit{JoinAll}.  The highest speedup was 
+achieved on the \textit{Movies} dataset: 3.6x for the decision tree and 6.2x for the RBF-SVM. As for the ANN, \textit{LastFM} reported the 
+largest speedup of 2.53x. 
+The speedup for the linear classifiers were more significant. For example, on \textit{Movies}, we saw a speedup of 707x for Naive Bayes, while on 
+\textit{LastFM}, we saw a speedup of 20x for logistic regression. Thus, these results corroborate the orders of magnitude speedup reported in~\cite{hamlet} 
+for Naive Bayes with backward selection.
 
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.85\linewidth]{onexr.pdf}
-\caption{Simulation results for Scenario OneXr. For all plots except (E), we fix $p = 0.1$. Note that $n_R \equiv |\mathcal{D}_{FK}|$.
+\includegraphics[width=0.92\linewidth]{onexr.pdf}
+\vspace{2mm}
+\caption{Simulation results for Scenario \texttt{OneXr}. For all plots except (E), we fix $p = 0.1$. Note that $n_R \equiv |\mathcal{D}_{FK}|$.
 (A) Vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$.
 (B) Vary $n_R$, while fixing $(n_S, d_S, d_R) = (1000, 4, 4)$.
 (C) Vary $d_S$, while fixing $(n_S, n_R, d_R) = (1000, 40, 4)$.
@@ -434,12 +488,12 @@ For all the high capacity classifiers, we notice average runtime speedup of 2x f
 
 \section{In-depth Simulation Study}	
 
-We dive deeper into the behavior of the decision tree classifier using a simulation study in which we vary the properties of the 
+We now dive deeper into the behavior of the decision tree classifier using a simulation study in which we vary the properties of the 
 underlying ``true'' data distribution. We focus on a two-table KFK join for simplicity. We sample datasets of different dimensions.
-We use the decision tree for this study because it exhibited the maximum robustness to avoiding KFK joins on the real data. 
+We use the decision tree for this study because it exhibited the maximum robustness to avoiding KFK joins on the real-world datasets.
 Our simulation study is designed to comprehensively ``stress test'' this robustness.
 Note that our simulation methodology is not tied to decision trees; it is generic enough to be applicable to classifier because we only 
-use standard generic notions of error and variance.
+use standard generic notions of error and \textit{net variance} as defined in~\cite{hamlet}.
 
 \paragraph*{Setup and Data Synthesis}
 There is one dimension table \textbf{R} ($q=1$), and all of $\textbf{X}_S$, $\textbf{X}_R$, and $Y$ are boolean (domain size $2$).
@@ -481,7 +535,7 @@ error)! From inspecting the actual decision trees learned in these two settings,
 a feature from $\textbf{X}_R$, including $X_r$, used. This suggests that $FK$ can indeed act as a good representative of $\textbf{X}_R$ even in this extreme sccenario. 
 In contrast to these results,~\cite{hamlet} reported that for linear models, the errors of \textit{NoJoin} shot up compared to \textit{JoinAll} (a gap of nearly $0.05$)
 as the tuple ratio starts falling below $20$. In stark contrast, as Figure~\ref{Figure:OneXrSimulation}(B) shows, even for a tuple ratio of just $3$, \textit{NoJoin} 
-and \textit{JoinAll} have similar errors with the decision tree. This corroborates the results seen for the decision tree on the real datasets (Table~\ref{Table:RealTest}).
+and \textit{JoinAll} have similar errors with the decision tree. This corroborates the results seen for the decision tree on the real datasets (Table~\ref{Table:RealTest1}).
 When $n_S$ becomes very low or when $|\mathcal{D}_{FK}|$ becomes very high, the absolute errors of \textit{JoinAll} and \textit{NoJoin} increase compared to \textit{NoFK}. 
 This suggests that when the tuple ratio is very low, \textit{NoFK} is perhaps worth trying too. This is similar to the behavior seen on \textit{Yelp}. 
 Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \textit{JoinAll}.
@@ -489,33 +543,47 @@ Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \t
 Finally, we also ran this simulation scenario for the RBF-SVM (and 1-NN) and found the trends to be similar, except for the magnitude of the tuple ratio at which 
 \textit{NoJoin} deviates from \textit{JoinAll}. Figure~\ref{Figure:OneXr1nnSVMSimulation} presents the results for the experiment in which we increase $|\mathcal{D}_{FK}|=n_R$, 
 while fixing everything else, similar to Figure~\ref{Figure:OneXrSimulation}(B) for the decision tree. We see that for the RBF-SVM, the error deviation starts when the 
-tuple ratio ($n_S/n_R$) falls below roughly $6$x. This corroborates the behavior seen for the decision tree on the real datasets (Table~\ref{Table:RealTest}).
-The 1-NN, as expected, is far less stable and the deviation starts even at a tuple ratio of $100$x.
-
+tuple ratio ($n_S/n_R$) falls below roughly $6$x. This corroborates its behavior on the real datasets (Table~\ref{Table:RealTest2}).
+The 1-NN, as expected, is far less stable and the deviation starts even at a tuple ratio of $100$x, i.e., $n_R = 10$).
+As Figure~\ref{Figure:OneXr1nnSVMSimulationVariance} confirms, the deviation in accuracy for the RBF-SVM arises due to the net variance, 
+which helps quantify the extra overfitting. This is akin to the extra overfitting reported in~\cite{hamlet} using the plots of the net variance.
+Intriguingly, the 1-NN sees its net variance exhibit non-monotonic behavior; this is likely an artifact of its unstable behavior, since fewer and fewer
+training examples will match on on $FK$ as $n_R$ keeps rising.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_svm_1nn.pdf}
-\caption{Scenario OneXr simulations with the same setup as Figure~\ref{Figure:OneXrSimulation}(B), except for (A) 1-NN and (B) RBF-SVM.}
+\vspace{1mm}
+\caption{Scenario \texttt{OneXr} simulations with the same setup as Figure~\ref{Figure:OneXrSimulation}(B), except for (A) 1-NN and (B) RBF-SVM.}
 \label{Figure:OneXr1nnSVMSimulation}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{variance.pdf}
-\caption{Variance plots for (A) 1-NN and (B) RBF-SVM.}
+\vspace{1mm}
+\caption{Average net variance in the scenario \texttt{OneXr} for (A) 1-NN and (B) RBF-SVM.}
 \label{Figure:OneXr1nnSVMSimulationVariance}
 \end{figure}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{skewfk_onexr.pdf}
+\vspace{2mm}
 \caption{Scenario \texttt{OneXr} simulations with skew in $P(FK)$. (A-B) Zipfian skew. (C-D) Needle-and-thread skew. For (A) and (C), we vary the respective skew parameter
-(Zipfian skew parameter and needle probability), while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$. For (B) and (D), we vary $n_S$, while fixing $(n_R, d_S, d_R) = (40, 4, 4)$,
-the Zipfian skew parameter to $2$ for (B), and the needle probability to $0.5$ for (D).
-}
+(Zipfian skew parameter and needle probability), while fixing $(n_S, n_R, d_S, d_R) = (1000, 40, 4, 4)$. For (B) and (D), we vary $n_S$, 
+while fixing $(n_R, d_S, d_R) = (40, 4, 4)$, the Zipfian skew parameter to $2$ for (B), and the needle probability to $0.5$ for (D).}
 \label{Figure:OneXrZipfSimulation}
 \end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.99\linewidth]{xsxr1.pdf}
+\vspace{2mm}
+\caption{Simulation results for Scenario \texttt{XSXR}. The parameter values varied/fixed ($n_S$, $n_R$, $d_S$, and $d_R$) are the same as in Figure~\ref{Figure:OneXrSimulation} (A)-(D).}
+\label{Figure:XsXrSimulation}
+\end{figure*}
+
 
 \paragraph*{Foreign Key Skew}
 The regular \texttt{OneXr} scenario samples $FK$ uniformly randomly from $\mathcal{D}_{FK}$ (step 3 in the procedure). We now ask if a \textit{skew} in 
@@ -529,13 +597,6 @@ Surprisingly, the gap between \textit{NoJoin} and \textit{JoinAll} does not wide
 needle-and-thread case! This result further affirms the remarkable robustness of the decision tree when discarding foreign features. As expected, 
 \textit{NoFK} is better when $n_S$ is low, while overall, \textit{NoJoin} is quite similar to \textit{JoinAll}.
 
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.99\linewidth]{xsxr1.pdf}
-\caption{Simulation results for Scenario XSXR. The parameter values varied/fixed ($n_S$, $n_R$, $d_S$, and $d_R$) are the same as in Figure~\ref{Figure:OneXrSimulation} (A)-(D).}
-\label{Figure:XsXrSimulation}
-\end{figure*}
 
 \subsection{Scenario XSXR}
 
@@ -559,46 +620,55 @@ But as we increase $d_R$ or $d_S$, the gap between \textit{JoinAll}/\textit{NoJo
 Of course, all gaps virtually disappear as the number of training examples increases, as shown by Figure~\ref{Figure:XsXrSimulation}(A).
 Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \textit{JoinAll} even in this scenario.
 
-\begin{table*}
-\centering
-\includegraphics[width=2\columnwidth]{table3-1.pdf}
-\caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest1}.}
-\label{Table:RealTrain}
-\end{table*}
 
-\begin{table*}
-\centering
-\includegraphics[width=2\columnwidth]{table3-2.pdf}
-\caption{Training errors of the respective chosen models in the same experiment as Table~\ref{Table:RealTest2}.}
-\label{Table:RealTrain}
-\end{table*}
-
-\subsection{Scenario RepOneXr}
-We now present results for a new simulation scenario in which the true distribution is precisely captured using a lone feature $X_r \in \textbf{X}_R$. We sample examples similarly as per the procedure mentioned earlier for OneXr, except that the tuples of $\textbf{R}$ will now be constructed by replicating the value of $X_r$ sampled for a tuple to create all the other features in $X_R$. That is, $X_R$ of an example is just the same value repeated $d_R$ times. Note that the FD $\textit{FK} \rightarrow X_R $ implies there are at least as many unique $FK$ values as $\textbf{X}_R$ values. Thus, by increasing the number of $FK$ values relative to $X_R$ values, we hope to increase the chance of the model getting ``confused'' with \textit{NoJoin}. Our goal is to see if this widens the gap between \textit{JoinAll} and \textit{NoJoin}.
-
-\begin{figure}[h]
+\begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_jerrydt.pdf}
-\caption{Scenario RepOneXr simulations for decision tree. (A) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 40, 4)$. (B) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 200, 4)$.}
+\vspace{1mm}
+\caption{Scenario \texttt{RepOneXr} simulations for decision tree. (A) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 40, 4)$. 
+(B) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 200, 4)$.}
 \label{Figure:OneXrjerry_dt}
 \end{figure}
 
-Figure \ref{Figure:OneXrjerry_dt} presents the results for the two experiments on decision trees where (A) maintains a high tuple ratio of 25x and (B) maintains a low tuple ratio of 5x. Once again, \textit{JoinAll} and \textit{NoJoin} exhibit similar errors in both the cases. Finally, we run this simulation scenario for both RBF-SVM (shown in Figure \ref{Figure:OneXrjerry_svm}) and 1-NN (shown in Figure \ref{Figure:OneXrjerry_1nn}). We found the trends to be similar as section 4.1. We see that for RBF-SVM, the error deviation happens at a tuple ratio of 5x. The 1-NN, as expected is less stable and the deviation happens even at a higher tuple ratio of 25x. With low tuple ratios, the absolute errors of \textit{JoinAll} and \textit{NoJoin} increases compared to \textit{NoFK} for all the cases as we note in Figure \ref{Figure:OneXrjerry_dt},\ref{Figure:OneXrjerry_svm},\ref{Figure:OneXrjerry_1nn} (B).
-
-\begin{figure}[h]
+\begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_jerrysvm.pdf}
-\caption{Scenario OneXr simulations with same setup as Figure~\ref{Figure:OneXrjerry_dt}, except for SVM.}
+\vspace{1mm}
+\caption{Scenario \texttt{RepOneXr} simulations with same setup as Figure~\ref{Figure:OneXrjerry_dt}, except for RBF-SVM.}
 \label{Figure:OneXrjerry_svm}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_jerry1nn.pdf}
-\caption{Scenario OneXr simulations with same setup as Figure~\ref{Figure:OneXrjerry_dt}, except for 1-NN.}
+\vspace{1mm}
+\caption{Scenario \texttt{RepOneXr} simulations with same setup as Figure~\ref{Figure:OneXrjerry_dt}, except for 1-NN.}
 \label{Figure:OneXrjerry_1nn}
 \end{figure}
 
+\subsection{Scenario RepOneXr}
+We now present results for a new simulation scenario in which the true distribution is precisely captured using a lone feature $X_r \in \textbf{X}_R$. We sample examples similarly as per the procedure mentioned earlier for \texttt{OneXr}, except that the tuples of $\textbf{R}$ will now be constructed by replicating the value of $X_r$ sampled for a tuple to create all the other features in $X_R$. That is, $X_R$ of an example is just the same value repeated $d_R$ times. Note that the FD $\textit{FK} \rightarrow X_R $ implies there are at least as many unique $FK$ values as $\textbf{X}_R$ values. Thus, by increasing the number of $FK$ values relative to $X_R$ values, we hope to increase the chance of the model getting ``confused'' with \textit{NoJoin}. Our goal is to see if this widens the gap between \textit{JoinAll} and \textit{NoJoin}.
+
+Figure~\ref{Figure:OneXrjerry_dt} presents the results for the two experiments on decision trees where (A) has a high tuple ratio of 25x and (B) has a low tuple ratio of 5x. 
+We see that once again, \textit{JoinAll} and \textit{NoJoin} exhibit similar errors in both the cases. We also run this simulation scenario for 
+both the RBF-SVM and 1-NN as well; the results are shown in Figure~\ref{Figure:OneXrjerry_svm}) and Figure~\ref{Figure:OneXrjerry_1nn} respectively.
+We see that the trends are similar to the decision tree. For the RBF-SVM, the error of \textit{NoJoin} deviates at a tuple ratio of about 5x. 
+As for 1-NN, as expected, it is much less stable and the deviation happens even at a higher tuple ratio of 25x.
+At low tuple ratios, as expected, the absolute errors of \textit{JoinAll} and \textit{NoJoin} increase compared to \textit{NoFK} for all three models.
+
+\begin{table*}[t]
+\centering
+\includegraphics[width=2\columnwidth]{table3-1.pdf}
+\caption{Training accuracy for the same experiments as in Table~\ref{Table:RealTest1}.}
+\label{Table:RealTrain1}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\includegraphics[width=2\columnwidth]{table3-2.pdf}
+\caption{Training accuracy for the same experiments as in Table~\ref{Table:RealTest2}.}
+\label{Table:RealTrain2}
+\end{table*}
 
 \section{Analysis and Open Questions}
 
@@ -606,7 +676,8 @@ Figure \ref{Figure:OneXrjerry_dt} presents the results for the two experiments o
 
 We now intuitively explain the surprising behavior of decision trees and RBF-SVM with \textit{NoJoin} vis-a-vis \textit{JoinAll}.
 We first ask: {Does \textit{NoJoin} compromise the ``generalization error''?} The generalization error is the difference of the test and train errors.
-Table~\ref{Table:RealTest} already provided the test accuracy. Table~\ref{Table:RealTrain} now provides the train accuracy. Clearly, \textit{JoinAll} vs 
+Tables~\ref{Table:RealTest1} and~\ref{Table:RealTest2} already provided the test accuracy. 
+Tables~\ref{Table:RealTrain1} and~\ref{Table:RealTrain2} now provide the train accuracy. Clearly, \textit{JoinAll} vs 
 \textit{NoJoin} are almost indistinguishable for the decision tree! The only exception is \textit{Yelp}, which we already noted. 
 Note that the absolute generalization error is often high, which is expected for decision trees~\cite{dtreebias2}. 
 For example, the train accuracy is nearly $100\%$ on \textit{Flights}, while the test accuracy on it is only $85\%$.
@@ -670,7 +741,7 @@ formal mechanisms to characterize when discarding foreign features is feasible b
 Looking further out, from a data management perspective, there are database dependencies that are more general than FDs: 
 embedded multi-valued dependencies (EMVDs) and join dependencies (JDs)~\cite{avibook}. How does the presence of such 
 database dependencies among features affect the behavior of ML models? There are also conditional FDs, which satisfy FD-like 
-constraints among subsets of the dataset~\cite{condfds}. How do such properties of the data distribution affect ML behavior?
+constraints among subsets of the dataset~\cite{avibook}. How do such properties of the data distribution affect ML behavior?
 Finally, the axioms of FDs imply that foreign features can be divided into arbitrary subsets before being avoided, which opens 
 up a new trade-off space between fully avoiding a foreign table and fully using it. How do we quantify this trade-off and exploit it?
 Answering these questions could open up new connections between data management and ML theory and potentially lead to 
@@ -695,7 +766,7 @@ positive integer ``budget'' $l \ll m$, we want a mapping $f: [m] \rightarrow [l]
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{dom_comp.pdf}
-\caption{Domain compression. (A) \textit{Flights}. (B) \textit{Yelp}.}
+\caption{Foreign key domain compression. (A) \textit{Flights}. (B) \textit{Yelp}.}
 \label{Figure:Compression}
 \end{figure}
 
@@ -714,10 +785,10 @@ report the average across five runs. Figure~\ref{Figure:Compression} presents th
 
 On \textit{Yelp}, both \textit{Random} and \textit{Sort-based} have comparable accuracy although Sort-based is marginally higher, especially
 as the budget $l$ increases. But on \textit{Flights}, we see a larger gap for some values of $l$ although the gap narrows as the $l$ increases.
-The test accuracy with the whole $\mathcal{D}_{FK}$ ($l=m$) for \textit{NoJoin} on \textit{Flights} was $0.8516$ (see Table~\ref{Table:RealTest}). So, 
+The test accuracy with the whole $\mathcal{D}_{FK}$ ($l=m$) for \textit{NoJoin} on \textit{Flights} was $0.8516$ (see Table~\ref{Table:RealTest1}). So, 
 it is surprising the test accuracy is about $0.83$ with such high compression. Even more surprisingly, the test accuracy with the whole 
 $\mathcal{D}_{FK}$ ($l=m$) for \textit{NoJoin} on \textit{Yelp} was $0.8204$ and for \textit{NoFK} was $0.8644$. So, with domain compression,
-we see significantly higher accuracy for \textit{NoJoin}, even higher than \textit{NoFK}! Overall, these results suggest that $FK$ domain compression 
+we see significantly higher accuracy for \textit{NoJoin}, even higher than \textit{NoFK}. Overall, these results suggest that $FK$ domain compression 
 is a promising way to resolve the large-domain issue rather than simply dropping $FK$.
 
 \eat{
@@ -787,7 +858,7 @@ simply the count of the number of pairwise mismatches of the respective features
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{smoothing.pdf}
-\caption{Smoothing. (A) Random hashing. (B) $\textbf{X}_R$-based.}
+\caption{Foreign key smoothing. (A) Random hashing. (B) $\textbf{X}_R$-based.}
 \label{Figure:smoothing}
 \end{figure}
 
@@ -872,7 +943,7 @@ from a learning theoretic perspective. Other avenues include understanding the e
 general database dependencies on classifiers, the effects of all database dependencies on 
 regression and clustering models, and designing an automated ``advisor" for data sourcing for ML tasks.
 
-\pagebreak
+%\pagebreak
 
 \bibliographystyle{abbrv}
 \bibliography{HamletVLDB}
