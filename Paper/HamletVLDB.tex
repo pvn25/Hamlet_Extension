@@ -885,12 +885,11 @@ and theoretical, and we have outlined some in this paper. We hope our analyses a
 
 \paragraph*{Database Dependencies and ML}
 The scenario of learning over joins of multiple tables without materializing the output of the join was studied in~\cite{orion,olteanuf,rendle,santoku},
-but their goal was primarily to reduce runtimes of some ML techniques without affecting accuracy. In contrast, our work focuses on the more 
-fundamental question of whether KFK joins can be avoided safely. We first demonstrated the feasibility of avoiding joins safely in~\cite{hamlet} 
-but restricted our focus to linear models such as logistic regression and Naive Bayes .
-In this work, we revisit and analyze that idea for models with much higher capacity and show that these are counter-intuitively \textit{more} 
-robust than linear models to avoiding joins, not \textit{less} as the VC dimension-based analysis in~\cite{hamlet} suggested. We also empirically
-verify mechanisms to make foreign key features more practical.
+but their goal was primarily to reduce runtimes of some ML techniques without affecting accuracy. It was also studied in~\cite{crossmine} but their
+focus was on devising a new ML algorithm. In contrast, our work focuses on the more fundamental question of whether KFK joins can be avoided safely for 
+existing popular ML algorithms. We first demonstrated the feasibility of avoiding joins safely in~\cite{hamlet} for linear models. In this work, we revisit that 
+idea for higher capacity models and find that they are counter-intuitively \textit{more} robust than linear models to avoiding joins, not \textit{less} as the 
+VC dimension-based analysis in~\cite{hamlet} suggested. We also empirically verify mechanisms to make foreign key features more practical.
 Embedded multi-valued dependencies (EMVDs) are database dependencies that are more general than functional dependencies~\cite{dbtheorybook}. 
 The implication of EMVDs for probabilistic conditional independence in Bayesian networks was originally described by~\cite{pearl} and further explored by~\cite{wong}.
 However, their use of EMVDs still requires computations over all features in the data instance. In contrast, avoiding joins safely omits entire sets 
@@ -899,11 +898,10 @@ There is a large body of work on statistical relational learning (SRL) to handle
 our work focuses on the regular IID setting for which SRL might be an overkill.
 
 \paragraph*{Feature Selection}
-The data mining and ML communities have long studied the problem of feature selection to improve ML accuracy~\cite{guyonbook,hastie}.
-In contrast, our goal is \textit{not} to design new feature selection methods nor is it compare existing feature selection methods. 
-Rather, we demonstrate that foreign features quite often do not help improve accuracy when learning some popular complex ML classifiers. 
-This is essentially as a way of ``short-circuiting'' the feature selection process using database schema information, which could help reduce
-the burden of sourcing the features in the place.
+The data mining and ML communities have long worked on feature selection methods to improve ML accuracy~\cite{guyonbook,hastie}.
+In contrast, our goal is \textit{not} to design new feature selection methods nor is it compare existing methods. 
+Rather, we want to understand if KFKDs/FDs in the schema can enable us to avoid entire sets of features a priori for some popular complex classifiers.
+This is a way of ``short-circuiting'' the feature selection process using database schema information to reduce the burden of data sourcing.
 The trade-off between feature redundancy and relevancy is well-studied~\cite{guyonbook,leiyu,daphnekoller}. The conventional wisdom is that even a feature that is 
 redundant might be highly relevant and hence, unavoidable in the mix~\cite{guyonbook}. Our work establishes, perhaps surprisingly, that this is \textit{not} the case 
 for foreign features; even if a foreign feature is highly relevant, it can be safely discarded in most practical cases for decision trees, RBF-SVMs, and ANNs.
