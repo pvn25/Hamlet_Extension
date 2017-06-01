@@ -60,7 +60,7 @@ between tables often lets us avoid such joins without significantly affecting pr
 accuracy--an idea they called ``avoiding joins safely." While initially controversial, this idea 
 has since been used by multiple companies to reduce the burden of data sourcing for ML.
 But their work applied only to linear classifiers. In this work, we verify if their results hold 
-for three popular complex classifiers: decision trees, SVMs, and ANNs. We conduct an 
+for three popular high-capacity classifiers: decision trees, non-linear SVMs, and ANNs. We conduct an 
 extensive experimental study using both real-world datasets and simulations to analyze the 
 effects of avoiding KFK joins on such models. Our results show that these high-capacity classifiers 
 are surprisingly and counter-intuitively \textit{more} robust to avoiding KFK joins compared to 
@@ -266,9 +266,7 @@ In general, $FK_i$ can take values only from the given set of $\textbf{R}_i.RID_
 are mapped to ``Others''). Since ML models are rebuilt periodically in practice, new information can then be added to expand feature domains. 
 We emphasize that our goal is \textit{not} to create new ML or feature selection algorithms, nor is to compare which algorithms yield 
 the best accuracy or runtime. Our goal is to expose and analyze how KFKDs/FDs enable us to dramatically discard foreign features a priori 
-when learning three popular high-capacity classifiers: decision trees (CART), SVM (with RBF kernel and quadratic kernel), and ANN (multi-layer 
-perceptron with two hidden layers). For comparisons and deeper analysis, we also present results for Naive Bayes with backward selection, 
-logistic regression with L1 regularization, linear SVM, and the ``braindead" 1-nearest neighbor classifier.
+when learning some popular high-capacity classifiers.
 
 \begin{table}[t]
 \centering
@@ -283,9 +281,11 @@ corresponding dimension table can never be discarded because its corresponding f
 
 \section{Empirical Study with Real Data}
 
-We now present our detailed empirical study using real-world datasets on 10 classifiers, including 6 high-capacity classifiers (decision tree with gini, 
-information gain, and gain ratio; SVM with RBF and quadratic kernels), 3 linear classifiers (Naive Bayes with backward selection, logistic regression with
-L1 regularization, and linear SVM), and the braindead 1-nearest neighbor.
+We now present our detailed empirical study using real-world datasets on 10 classifiers, including 7 high-capacity classifiers (CART decision tree with gini, 
+information gain, and gain ratio; SVM with RBF and quadratic kernels; multi-layer perceptron ANN; the ``braindead" 1-nearest neighbor), and 3 linear classifiers 
+(Naive Bayes with backward selection, logistic regression with L1 regularization, and linear SVM).
+We also conducted experiments with a few other feature selection techniques for the linear classifiers: Naive Bayes with forward selection and filter methods, 
+as well as logistic regression L2 regularization Since these additional linear classifiers did not provide any new insights, we omit them due to space constraints.
 
 \subsection{Datasets}
 We take the seven real datasets from~\cite{hamlet}; these are originally from Kaggle, GroupLens, \url{openflights.org}, \url{mtg.upf.edu/node/1671}, and \url{last.fm}.
@@ -379,7 +379,7 @@ The other hyper-parameters of the Adam algorithm used the default values.
 However, it has three parameters to specify a desired convergence threshold and a limit on the execution time: \textit{nlambda}, which we set to 100,
 \textit{maxit}, which we set to 10000, and \textit{thresh}, which we set to 0.001.
 
-Table~\ref{Table:RealTest1} presents the holdout test accuracy results for all the models on all the datasets.
+Tables~\ref{Table:RealTest1} and~\ref{Table:RealTest2} present the holdout test accuracy results for all the models on all the datasets.
 %We present the final results in the table \ref{Table:NeuralNet}.
 
 \begin{table}[t]
@@ -397,8 +397,9 @@ No R1,R2: 0.8488 \quad No R1,R3: 0.8481 \quad No R2,R3: 0.8519
 
 \vspace{-1mm}
 \subsubsection*{Accuracy}
-Our first and most important observation is that for almost all the datasets (\textit{Yelp} being the exception) and for all three split criteria, the accuracy of the decision 
-tree is comparable (a gap of within 1\%) between \textit{JoinAll} and \textit{NoJoin}. The trend is virtually the same for the RBF-SVM and ANN as well. 
+Our first and most important observation is that for almost all the datasets (\textit{Yelp} being the exception) and for all three split criteria, the accuracy of the 
+decision tree is comparable (a gap of within 1\%) between \textit{JoinAll} and \textit{NoJoin}.\footnote{Except for gain ratio on \textit{LastFM}, where \textit{NoJoin}
+is actually significantly \textit{more} accurate than \textit{JoinAll}!} The trend is virtually the same for the RBF-SVM and ANN as well. 
 We also observe that the trend is virtually the same for the linear models as well! Thus, regardless of whether our classifier is linear or higher capacity, the relative 
 behavior of \textit{NoJoin} vis-a-vis \textit{JoinAll} is virtually the same. 
 In other words, these results represent out key counter-intuitive finding: joins are no less safe to avoid with the high capacity classifiers than with the 
