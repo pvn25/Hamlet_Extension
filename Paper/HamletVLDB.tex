@@ -451,6 +451,7 @@ We discuss this behavior further in Section 5.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\linewidth]{histogram.pdf}
+\vspace{-4mm}
 \caption{End-to-end runtimes on the real-world datasets: Walmart (W), Expedia (E), Flights (F), Yelp (Y), Movies (M), LastFM (L) and Books (B).}
 \label{Figure:runtime}
 \end{figure*}
@@ -541,7 +542,7 @@ When $n_S$ becomes very low or when $|\mathcal{D}_{FK}|$ becomes very high, the 
 This suggests that when the tuple ratio is very low, \textit{NoFK} is perhaps worth trying too. This is similar to the behavior seen on \textit{Yelp}. 
 Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \textit{JoinAll}.
 
-Finally, we also ran this simulation scenario for the RBF-SVM (and 1-NN) and found the trends to be similar, except for the magnitude of the tuple ratio at which 
+Finally, we also ran this scenario for the RBF-SVM (and 1-NN) and found the trends to be similar, except for the magnitude of the tuple ratio at which 
 \textit{NoJoin} deviates from \textit{JoinAll}. Figure~\ref{Figure:OneXr1nnSVMSimulation} presents the results for the experiment in which we increase $|\mathcal{D}_{FK}|=n_R$, 
 while fixing everything else, similar to Figure~\ref{Figure:OneXrSimulation}(B) for the decision tree. We see that for the RBF-SVM, the error deviation starts when the 
 tuple ratio ($n_S/n_R$) falls below roughly $6$x. This corroborates its behavior on the real datasets (Table~\ref{Table:RealTest2}).
@@ -554,7 +555,7 @@ training examples will match on $FK$ as $n_R$ keeps rising.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_svm_1nn.pdf}
-\vspace{1mm}
+%\vspace{1mm}
 \caption{Scenario \texttt{OneXr} simulations with the same setup as Figure~\ref{Figure:OneXrSimulation}(B), except for (A) 1-NN and (B) RBF-SVM.}
 \label{Figure:OneXr1nnSVMSimulation}
 \end{figure}
@@ -562,7 +563,7 @@ training examples will match on $FK$ as $n_R$ keeps rising.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{variance.pdf}
-\vspace{1mm}
+%\vspace{1mm}
 \caption{Average net variance in the scenario \texttt{OneXr} for (A) 1-NN and (B) RBF-SVM.}
 \label{Figure:OneXr1nnSVMSimulationVariance}
 \end{figure}
@@ -625,7 +626,7 @@ Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \t
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_jerrydt.pdf}
-\vspace{1mm}
+%\vspace{1mm}
 \caption{Scenario \texttt{RepOneXr} simulations for decision tree. (A) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 40, 4)$. 
 (B) Vary $d_R$ while fixing $(n_S, n_R, d_S) = (1000, 200, 4)$.}
 \label{Figure:OneXrjerry_dt}
@@ -634,7 +635,7 @@ Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \t
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_jerrysvm.pdf}
-\vspace{1mm}
+%\vspace{1mm}
 \caption{Scenario \texttt{RepOneXr} simulations with same setup as Figure~\ref{Figure:OneXrjerry_dt}, except for RBF-SVM.}
 \label{Figure:OneXrjerry_svm}
 \end{figure}
@@ -642,7 +643,7 @@ Overall, \textit{NoJoin} exhibits similar behavior as the current practice of \t
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.99\linewidth]{onexr_jerry1nn.pdf}
-\vspace{1mm}
+%\vspace{1mm}
 \caption{Scenario \texttt{RepOneXr} simulations with same setup as Figure~\ref{Figure:OneXrjerry_dt}, except for 1-NN.}
 \label{Figure:OneXrjerry_1nn}
 \end{figure}
