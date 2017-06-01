@@ -548,7 +548,7 @@ The 1-NN, as expected, is far less stable and the deviation starts even at a tup
 As Figure~\ref{Figure:OneXr1nnSVMSimulationVariance} confirms, the deviation in accuracy for the RBF-SVM arises due to the net variance, 
 which helps quantify the extra overfitting. This is akin to the extra overfitting reported in~\cite{hamlet} using the plots of the net variance.
 Intriguingly, the 1-NN sees its net variance exhibit non-monotonic behavior; this is likely an artifact of its unstable behavior, since fewer and fewer
-training examples will match on on $FK$ as $n_R$ keeps rising.
+training examples will match on $FK$ as $n_R$ keeps rising.
 
 \begin{figure}[t]
 \centering
@@ -685,7 +685,7 @@ But the absolute generalization error is orthogonal to our focus; we only note t
 \textit{In other words, discarding foreign features did not significantly affect the generalization error of the decision tree!} 
 The generalization errors of the RBF-SVM also exhibit a similar trend.
 
-Returning to 1-NN, Table~\ref{Table:RealTest} showed that it has similar accuracy as the RBF-SVM on some datasets. We now explain why that comparison is useful: the RBF-SVM 
+Returning to 1-NN, Table~\ref{Table:RealTest1} showed that it has similar accuracy as the RBF-SVM on some datasets. We now explain why that comparison is useful: the RBF-SVM 
 essentially behaves similar to the 1-NN in some cases when $FK$ is used (both \textit{JoinAll} and \textit{NoJoin})! But this is not necessarily ``bad'' for its test accuracy.
 Note that $FK$ is represented using the standard one-hot encoding for RBF-SVM and 1-NN. So, $FK$ can contribute to a maximum distance of $2$ in a (squared) Euclidean distance between 
 two examples $x_i$ and $x_j$.
