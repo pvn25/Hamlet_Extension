@@ -1,0 +1,4 @@
+for f 0, num vals: 7
+for f 1, num vals: 81
+for f 2, num vals: 45
+for f 3, num vals: 2340
