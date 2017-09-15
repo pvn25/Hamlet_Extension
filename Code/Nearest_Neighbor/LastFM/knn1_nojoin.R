@@ -15,9 +15,42 @@
 library(RWeka)
 source("myfilter.R")
 
-LFtrain=read.csv("LFsub2train_new.csv");
-LFtest=read.csv("LFsub2test_new.csv");
-LFhold=read.csv("LFsub2hold_new.csv");
+fact =read.csv('playsnew.csv');
+dim1=read.csv('artistsnew.csv')
+all = merge(fact,dim1,,by="artistid")
+
+
+dim2=read.csv('usersnew.csv')
+all1 = merge(all,dim2,by="userid")
+write.csv(all1,'all1.csv')
+
+# all2 = all1[,c("weekly_sales","dept","store","purchaseid","type","size","temperature_avg","temperature_stdev","fuel_price_avg","fuel_price_stdev","cpi_avg","cpi_stdev","unemployment_avg","unemployment_stdev","holidayfreq")]
+# all2 = all1[,c("rating","userid","bookid","year","publisher","country","titlewords","authorwords","age")]
+
+temp2 = all1[,c("plays","artistid","userid","rock","electronic","indie","pop","hiphop","gender","country","year","numscrobbles","numlistens","age")]
+# write.csv(all2,'all2.csv')
+set.seed(5)
+temp1 <- temp2[sample(nrow(temp2)),]
+n <- nrow(temp1)
+K <- 10
+size <- n %/% K
+
+rdm <- runif(n)
+ranked <- rank(rdm)
+block <- (ranked-1) %/% size+1
+block <- as.factor(block)
+
+for (k in 1:K) {
+LFtraintest <- temp1[block!=k,]
+set.seed(15)
+trainIndex = sample(1:n, size = round(0.67*n), replace=FALSE)
+LFtrain = LFtraintest[trainIndex ,]
+LFtest = LFtraintest[-trainIndex ,]
+LFhold <- temp1[block==k,]
+
+LFtrain = LFtrain[,-1]
+LFtest=LFtest[,-1]
+LFhold = LFhold[,-1]
 LFfull=rbind(LFtrain,LFtest,LFhold)
 
 feats= c("userid","artistid","plays")
@@ -42,5 +75,6 @@ print(fit)
 predictions <- predict(fit, LFhold,class = "class")
 print(predictions)
 outsettab <- table(pred = predictions, true = LFhold[,3])
-acc = geterr(outsettab, '01', nrow(LFhold))
+acc = geterr(outsettab, 'RMSE', nrow(LFhold))
 print(acc)
+}

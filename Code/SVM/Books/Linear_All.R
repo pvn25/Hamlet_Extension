@@ -16,10 +16,36 @@ library(e1071)
 options(width=190)
 source("myfilter.R")
 
-BCtrain=read.csv("BCtrain_new.csv");
-BCtest=read.csv("BCtest_new.csv");
-BChold=read.csv("BChold_new.csv");
-BCfull= rbind(BCtrain,BCtest,BChold) 
+fact =read.csv('ratingsnew.csv');
+dim1=read.csv('booksnew.csv')
+all = merge(fact,dim1,,by="bookid")
+
+
+dim2=read.csv('usersnew.csv')
+all1 = merge(all,dim2,by="userid")
+write.csv(all1,'all1.csv')
+
+# all2 = all1[,c("weekly_sales","dept","store","purchaseid","type","size","temperature_avg","temperature_stdev","fuel_price_avg","fuel_price_stdev","cpi_avg","cpi_stdev","unemployment_avg","unemployment_stdev","holidayfreq")]
+temp2 = all1[,c("rating","userid","bookid","year","publisher","country","titlewords","authorwords","age")]
+# write.csv(all2,'all2.csv')
+set.seed(5)
+temp1 <- temp2[sample(nrow(temp2)),]
+n <- nrow(temp1)
+K <- 10
+size <- n %/% K
+
+rdm <- runif(n)
+ranked <- rank(rdm)
+block <- (ranked-1) %/% size+1
+block <- as.factor(block)
+
+for (k in 1:K) {
+BCtraintest <- temp1[block!=k,]
+set.seed(15)
+trainIndex = sample(1:n, size = round(0.67*n), replace=FALSE)
+BCtrain = BCtraintest[trainIndex ,]
+BCtest = BCtraintest[-trainIndex ,]
+BChold <- temp1[block==k,]
 #userid,bookid,rating,titlewords,authorwords,year,publisher,country,age
 
 BCtrain$bookid = factor(BCtrain$bookid, levels=levels(BCfull$bookid));
@@ -54,7 +80,7 @@ pt = proc.time();
 fit <- svm(rating ~., data = BCtrain,  cost = ms[i], kernel= "linear", cachesize = 60000)
 predictions <- predict(fit, BCtest)
 outsettab <- table(pred = predictions, true = BCtest[,3])
-acc = geterr(outsettab, '01', nrow(BCtest), nrow(outsettab))
+acc = geterr(outsettab, 'RMSE', nrow(BCtest), nrow(outsettab))
 if(best<acc){
 	best = acc;best_ms = ms[i];
 }
@@ -74,6 +100,7 @@ print(proc.time() - pt)
 pt = proc.time(); 
 svm.pred_hold <- predict(tunn, BChold)
 outsettab <- table(pred = svm.pred_hold, true = BChold[,3])
-acc = geterr(outsettab, '01', nrow(BChold), nrow(outsettab))
+acc = geterr(outsettab, 'RMSE', nrow(BChold), nrow(outsettab))
 print(proc.time() - pt)
 print(acc)
+}

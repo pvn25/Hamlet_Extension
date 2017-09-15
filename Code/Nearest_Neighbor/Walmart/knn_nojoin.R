@@ -15,10 +15,36 @@
 library(RWeka)
 source("myfilter.R")
 
-WTtrain=read.csv("WTtrain_new.csv");
-WTtest=read.csv("WTtest_new.csv");
-WThold=read.csv("WThold_new.csv");
-WTfull = rbind(WTtrain, WTtest, WThold);
+fact =read.csv('salesnew.csv');
+dim1=read.csv('storesnew.csv')
+all = merge(fact,dim1,by="store")
+
+dim2=read.csv('purchasenew.csv')
+all1 = merge(all,dim2,by="purchaseid")
+write.csv(all1,'all1.csv')
+
+temp2 = all1[,c("weekly_sales","dept","store","purchaseid","type","size","temperature_avg","temperature_stdev","fuel_price_avg","fuel_price_stdev","cpi_avg","cpi_stdev","unemployment_avg","unemployment_stdev","holidayfreq")]
+
+# temp2 = read.csv("all2.csv");
+set.seed(5)
+temp1 <- temp2[sample(nrow(temp2)),]
+n <- nrow(temp1)
+K <- 10
+size <- n %/% K
+
+rdm <- runif(n)
+ranked <- rank(rdm)
+block <- (ranked-1) %/% size+1
+block <- as.factor(block)
+
+for (k in 1:K) {
+WTtraintest <- temp1[block!=k,]
+set.seed(15)
+trainIndex = sample(1:n, size = round(0.67*n), replace=FALSE)
+WTtrain = WTtraintest[trainIndex ,]
+WTtest = WTtraintest[-trainIndex ,]
+WThold <- temp1[block==k,]
+
 WTtrain = WTtrain[,-1]
 WTtest=WTtest[,-1]
 WThold = WThold[,-1]
@@ -90,5 +116,6 @@ print(fit)
 predictions <- predict(fit, WThold,class = "class")
 print(predictions)
 outsettab <- table(pred = predictions, true = WThold[,1])
-acc = geterr(outsettab, '01', nrow(WThold))
+acc = geterr(outsettab, 'RMSE', nrow(WThold))
 print(acc)
+}

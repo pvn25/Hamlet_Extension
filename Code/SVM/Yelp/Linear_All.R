@@ -16,13 +16,41 @@ library(e1071)
 options(width=190)
 source("myfilter.R")
 
-YRtrain=read.csv("YRtrain_new.csv");
-YRtest=read.csv("YRtest_new.csv");
-YRhold=read.csv("YRhold_new.csv");
+fact =read.csv('reviewfinal.csv');
+dim1=read.csv('usergend.csv')
+all = merge(fact,dim1,,by="userid")
 
-YRtrain=YRtrain[,-1] #get rid of reviewid
+dim2=read.csv('businesscheckin.csv')
+all1 = merge(all,dim2,by="businessid")
+write.csv(all1,'all1.csv')
+
+# all2 = all1[,c("weekly_sales","dept","store","purchaseid","type","size","temperature_avg","temperature_stdev","fuel_price_avg","fuel_price_stdev","cpi_avg","cpi_stdev","unemployment_avg","unemployment_stdev","holidayfreq")]
+# all2 = all1[,c("rating","userid","bookid","year","publisher","country","titlewords","authorwords","age")]
+
+temp2 = all1[,c("stars","businessid","userid","gender","cat109","cat363","cat361","cat366","cat344","cat33","city","cat501","cat444","cat404","cat259","cat246","cat79","open","cat221","cat314","cat104","state","ureviewcnt","ustars","vuseful","vfunny","vcool","latitude","longitude","bstars","breviewcnt","wday1","wday2","wday3","wday4","wday5","wend1","wend2","wend3","wend4","wend5")]
+# write.csv(all2,'all2.csv')
+set.seed(5)
+temp1 <- temp2[sample(nrow(temp2)),]
+n <- nrow(temp1)
+K <- 10
+size <- n %/% K
+
+rdm <- runif(n)
+ranked <- rank(rdm)
+block <- (ranked-1) %/% size+1
+block <- as.factor(block)
+
+for (k in 1:K) {
+YRtraintest <- temp1[block!=k,]
+set.seed(15)
+trainIndex = sample(1:n, size = round(0.67*n), replace=FALSE)
+YRtrain = YRtraintest[trainIndex ,]
+YRtest = YRtraintest[-trainIndex ,]
+YRhold <- temp1[block==k,]
+
+YRtrain = YRtrain[,-1]
 YRtest=YRtest[,-1]
-YRhold=YRhold[,-1]
+YRhold = YRhold[,-1]
 YRfull=rbind(YRtrain,YRtest,YRhold);
 
 YRfull$userid = factor(YRfull$userid)
@@ -143,7 +171,7 @@ pt = proc.time();
 tunn <- svm(stars ~., data = YRtrain,  cost = ms[i], kernel= "linear", cachesize = 60000)
 svm.pred_hold <- predict(tunn, YRtest)
 outsettab <- table(pred = svm.pred_hold, true = YRtest[,1])
-acc = geterr(outsettab, '01', nrow(YRtest), nrow(outsettab))
+acc = geterr(outsettab, 'RMSE', nrow(YRtest), nrow(outsettab))
 if(best<acc){
 	best = acc;best_ms = ms[i];
 }
@@ -158,6 +186,7 @@ j <- j + 1
 tunn <- svm(stars ~., data = YRtrain,  cost = best_ms, kernel= "linear", cachesize = 60000)
 svm.pred_hold <- predict(tunn, YRhold)
 outsettab <- table(pred = svm.pred_hold, true = YRhold[,1])
-acc = geterr(outsettab, '01', nrow(YRhold), nrow(outsettab))
+acc = geterr(outsettab, 'RMSE', nrow(YRhold), nrow(outsettab))
   
 print(acc)
+}
